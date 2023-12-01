@@ -20,6 +20,8 @@ int numbers[10][8] = {
   {0,1,1,0,1,1,1,1}
 };
 
+int hexPins[4] = {10,11,12,13};
+
 int all[8] = {1,1,1,1,1,1,1,1};
 
 void setup() {
@@ -39,21 +41,32 @@ void setup() {
 }
 
 
-
+long tics = 0;
 void loop() {
-  digitalWrite(10,LOW);
-  digitalWrite(11,LOW);
-  digitalWrite(12,LOW);
-  digitalWrite(13,LOW);
+  int counter = tics / 20;
+  int unitsDigit = counter % 10;
+  int tensDigit = (counter % 100) / 10;
+  displayNumberOnHex(tensDigit, 1);
+  displayNumberOnHex(unitsDigit, 2);
 
-  static int counter = 0;
-  
-  for(int i = 0 ; i < 8 ; ++i){
-    digitalWrite(i+2, numbers[counter][i]);
-  }
-  //   for(int i = 0 ; i < 8 ; ++i){
-  //   digitalWrite(i+2, all[i]);
-  // }
-  delay(1000);
-  counter = (counter + 1)%10;
+  tics++;
 }
+
+void displayNumberOnHex(int number, int hexNumber){
+
+  for(int i = 0 ; i < 4 ; ++i) {
+    if(hexPins[hexNumber-1] == hexPins[i]){
+      digitalWrite(hexPins[hexNumber-1], LOW);
+    }
+    else{
+      digitalWrite(hexPins[i], HIGH);
+    }
+  }
+  
+  for(int i = 0 ; i < 8 ; i ++) {
+    digitalWrite(i+2, numbers[number - 1][i]);
+  }
+  delay(10);
+}
+
+
