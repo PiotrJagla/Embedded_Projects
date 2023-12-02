@@ -1,4 +1,4 @@
-COMPILE = avr-gcc -Wall -Os -mmcu=atmega328p
+COMPILE = avr-gcc -Wall -Os -mmcu=atmega328p -DF_CPU=16000000UL
 
 default: compile upload clean
 
