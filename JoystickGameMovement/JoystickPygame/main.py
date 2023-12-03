@@ -1,3 +1,6 @@
+import math
+import random
+
 import pygame
 import serial.tools.list_ports
 
@@ -23,6 +26,7 @@ serialMonitor.open()
 
 WIDTH, HEIGHT = 900, 500
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
+SPEED = 1
 pygame.display.set_caption("joystick game")
 
 WHITE = (255,255,255)
@@ -30,9 +34,12 @@ BLACK = (0,0,0)
 FPS = 60
 rect = pygame.Rect(50,50,200,100)
 
-def draw_window():
+def draw_window(rectColor):
     WINDOW.fill(BLACK)
-    pygame.draw.rect(WINDOW, WHITE, rect)
+
+
+
+    pygame.draw.rect(WINDOW, rectColor, rect)
     pygame.display.update()
 
 
@@ -41,23 +48,95 @@ def main():
 
     run = True
     clock = pygame.time.Clock()
+    xComponent = 0.0
+    yComponent = 0.0
+    xNormalized = 0.0
+    yNormalized = 0.0
+    switchValue = False
+    lock = True
+    rectColor = (255,255,255)
     while run:
+        if switchValue and lock:
+            print("switch clicked")
+            rectColor = (random.randint(0,255), random.randint(0,255), random.randint(0,255))
+            lock = False
+        if not switchValue:
+            lock = True
+
+
         clock.tick(FPS)
+
         #check events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RIGHT:
-                    rect.x += 1
 
         #read from serial monitor
         if serialMonitor.in_waiting:
             readData = serialMonitor.readline()
-            print(readData.decode("UTF-8"))
+            # print(readData.decode("UTF-8"))
+            movementData = readData.decode("UTF-8").rstrip('\n').split(":")
+            component = movementData[0]
+            value = movementData[1]
+            if component.startswith("switch"):
+                # print(int(value))
+                if int(value) == 0:
+                    switchValue = True
+                elif int(value) == 1:
+                    switchValue = False
+                
+                # print(switchValue)
+            elif component.startswith("X-axis"):
+                xComponent = float(value)
+            elif component.startswith("Y-axis"):
+                yComponent = float(value)
 
-        draw_window()
-        
+
+
+            # print("Y: "+str(yComponent))
+            # print("X: " +str(xComponent) + "--\n")
+            xNormalized = xComponent - 500.0
+            yNormalized = yComponent - 500.0
+            if xNormalized >= -50 and xNormalized <= 50:
+                xNormalized = 0
+            if yNormalized >= -50 and yNormalized <= 50:
+                yNormalized = 0
+
+
+            # print("Y: "+str(yNormalized))
+            # print("X: " +str(xNormalized) + "--\n")
+
+            if xNormalized != 0 or yNormalized != 0:
+                vectorLength = math.sqrt(xNormalized*xNormalized + yNormalized*yNormalized)
+                xNormalized /= vectorLength
+                yNormalized /= vectorLength
+
+            # print("Y: "+str(yNormalized))
+            # print("X: " +str(xNormalized) + "--\n")
+
+
+        rect.x += xNormalized*SPEED
+        rect.y += yNormalized*SPEED
+
+        #detect collision with window
+        if rect.x <= 0:
+            rect.x = 0
+        elif rect.x + rect.width >= WIDTH:
+            rect.x = WIDTH - rect.width
+
+        if rect.y <= 0:
+            rect.y = 0
+        elif rect.y + rect.height >= HEIGHT:
+            rect.y = HEIGHT - rect.height
+
+
+
+
+
+        draw_window(rectColor)
+#         ['switch: 1\r']
+# ['X-axis: 500\r']
+# ['Y-axis: 524\r']
 
     pygame.quit()
 
