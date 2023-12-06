@@ -36,9 +36,6 @@ rect = pygame.Rect(50,50,200,100)
 
 def draw_window(rectColor):
     WINDOW.fill(BLACK)
-
-
-
     pygame.draw.rect(WINDOW, rectColor, rect)
     pygame.display.update()
 
@@ -74,18 +71,15 @@ def main():
         #read from serial monitor
         if serialMonitor.in_waiting:
             readData = serialMonitor.readline()
-            # print(readData.decode("UTF-8"))
             movementData = readData.decode("UTF-8").rstrip('\n').split(":")
             component = movementData[0]
             value = movementData[1]
             if component.startswith("switch"):
-                # print(int(value))
                 if int(value) == 0:
                     switchValue = True
                 elif int(value) == 1:
                     switchValue = False
                 
-                # print(switchValue)
             elif component.startswith("X-axis"):
                 xComponent = float(value)
             elif component.startswith("Y-axis"):
@@ -93,8 +87,6 @@ def main():
 
 
 
-            # print("Y: "+str(yComponent))
-            # print("X: " +str(xComponent) + "--\n")
             xNormalized = xComponent - 500.0
             yNormalized = yComponent - 500.0
             if xNormalized >= -50 and xNormalized <= 50:
@@ -102,17 +94,10 @@ def main():
             if yNormalized >= -50 and yNormalized <= 50:
                 yNormalized = 0
 
-
-            # print("Y: "+str(yNormalized))
-            # print("X: " +str(xNormalized) + "--\n")
-
             if xNormalized != 0 or yNormalized != 0:
                 vectorLength = math.sqrt(xNormalized*xNormalized + yNormalized*yNormalized)
                 xNormalized /= vectorLength
                 yNormalized /= vectorLength
-
-            # print("Y: "+str(yNormalized))
-            # print("X: " +str(xNormalized) + "--\n")
 
 
         rect.x += xNormalized*SPEED
@@ -134,9 +119,6 @@ def main():
 
 
         draw_window(rectColor)
-#         ['switch: 1\r']
-# ['X-axis: 500\r']
-# ['Y-axis: 524\r']
 
     pygame.quit()
 
