@@ -1,7 +1,3 @@
-;************************************
-; written by: 1o_o7
-; date: Oct 23, 2014
-;************************************
 
 .nolist
 .include "/usr/share/avra/m328Pdef.inc"
@@ -17,15 +13,15 @@ Init:
                        ;  register for PortB, which is DDRB, sets that
                        ;  pin as output, a 0 would set that pin as input
                        ;  so here, all PortB pins are outputs (set to 1)
-   ldi temp,0b11111110 ; load the `immediate' number to the temp register
+   ldi temp,0b11110110 ; load the `immediate' number to the temp register
                        ;  if it were just ld then the second argument
                        ;  would have to be a memory location instead
-   out    DDRD,temp    ; mv temp to DDRD, result is that PD0 is input
+   out    DDRD,temp ; mv temp to DDRD, result is that PD0 is input
                        ;  and the rest are outputs
 
    clr    temp         ; all bits in temp are set to 0's
    out    PortB,temp   ; set all the bits (i.e. pins) in PortB to 0V
-   ldi temp,0b00000001 ; load immediate number to temp
+   ldi temp,0b00001001 ; load immediate number to temp
    out    PortD,temp   ; move temp to PortD. PD0 has a pull up resistor 
                        ;  (i.e. set to 5V) since it has a 1 in that bit
                        ;  the rest are 0V since 0's.
