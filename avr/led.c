@@ -7,8 +7,8 @@
 #define BAUD ((F_CPU)/(BAUD_RATE*8UL)-1)
 
 
-void initUSART(void) {                                /* requires BAUD */
-    UBRR0H = (BAUD>>8);  // shift the register right by 8 bits to get the upper 8 bits
+void initUSART(void) {                                
+    UBRR0H = (BAUD>>8);  
     UBRR0L = BAUD;       // set baud rate
 
     UCSR0A |= (1 << U2X0);   // double transmission speed
@@ -34,8 +34,6 @@ void transmitMessage(char* message) {
 }
 
 int main(void) {
-    //CLKPR = (0<<CLKPS3)|(0<<CLKPS2)|(0<<CLKPS1)|(0<<CLKPS0); 
-    //USART_init(BAUD);
     initUSART();
     DDRB = DDRB | (1<< DDB5);
 
