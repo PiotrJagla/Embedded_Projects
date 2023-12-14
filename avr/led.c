@@ -9,6 +9,9 @@
 #define BAUD ((F_CPU)/(BAUD_RATE*8UL)-1)
 
 
+
+
+
 void initUSART(void) {                                
     UBRR0H = (BAUD>>8);  
     UBRR0L = BAUD;       // set baud rate
