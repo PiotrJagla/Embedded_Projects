@@ -49,37 +49,33 @@ int ADCread(int adctouse) {
   return ADCval;
 }
 
-char* intToChar(int val) { 
-  char buff[6] = {};
-  int i = 0;
-  int divisor = 1;
-  while(val != 0) {
-    buff[i++] = (char)((val%10)+CHAR_OFFSET);
-    divisor *= 10;
-    val /= divisor;
-  }
-  buff[i] = '\n';
-  return buff;
-}
 
 int main(void) {
     initUSART();
     DDRB = DDRB | (1<< DDB5);
+    DDRD = DDRD & ~(1<< DDD2);
+    PORTD = PORTD | (1<<DDD2);
 
     while(1){
       
-      int val = ADCread(5);
-      char buffer[10] = {};
-      sprintf(buffer, "%d\n", val);
-      transmitMessage(buffer);
+      int sw = (PIND & (1<<PIND2))?1:0;
+      //int sw = PIND & (1<<PIND2);
+      int Xread= ADCread(0);
+      int Yread= ADCread(1);
 
+      char SWbuffer[16] = {};
+      char Xbuffer[16] = {};
+      char Ybuffer[16] = {};
 
-      PORTB = PORTB | (1<<PORTB5);
+      sprintf(SWbuffer, "switch: %d\n", sw);
+      sprintf(Xbuffer, "X-axis: %d\n", Xread);
+      sprintf(Ybuffer, "Y-axis: %d\n", Yread);
 
-      _delay_ms(200);
+      transmitMessage(SWbuffer);
+      transmitMessage(Xbuffer);
+      transmitMessage(Ybuffer);
 
-      PORTB = PORTB & (~(1 << PORTB5));
-      _delay_ms(2000);
+      _delay_ms(50);
 
     }
 }

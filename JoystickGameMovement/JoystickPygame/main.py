@@ -1,5 +1,6 @@
 import math
 import random
+import platform
 
 import pygame
 import serial.tools.list_ports
@@ -12,12 +13,27 @@ for onePort in ports:
     portList.append(str(onePort))
     print(str(onePort))
 
-selectedPortNum = input("select Port: COM")
 
-for i in range(0,len(portList)):
-    if portList[i].startswith("COM" + str(selectedPortNum)):
-        selectedPort = "COM" + str(selectedPortNum) 
-        print(selectedPort)
+os_name = platform.system()
+if os_name == "Windows":
+    selectedPortNum = input("select Port: COM")
+    
+    for i in range(0,len(portList)):
+        if portList[i].startswith("COM" + str(selectedPortNum)):
+            selectedPort = "COM" + str(selectedPortNum) 
+            print(selectedPort)
+elif os_name == "Linux":
+    selectedPortNum = input("select Port: /dev/ttyACM")
+    
+    for i in range(0,len(portList)):
+        if portList[i].startswith("/dev/ttyACM" + str(selectedPortNum)):
+            selectedPort = "/dev/ttyACM" + str(selectedPortNum) 
+            print(selectedPort)
+
+
+
+
+
 
 serialMonitor.baudrate = 115200
 serialMonitor.port = selectedPort
@@ -72,8 +88,13 @@ def main():
         if serialMonitor.in_waiting:
             readData = serialMonitor.readline()
             movementData = readData.decode("UTF-8").rstrip('\n').split(":")
-            component = movementData[0]
-            value = movementData[1]
+
+            try:
+                component = movementData[0]
+                value = movementData[1]
+            except Exception as e:
+                print(movementData)
+
             if component.startswith("switch"):
                 if int(value) == 0:
                     switchValue = True
