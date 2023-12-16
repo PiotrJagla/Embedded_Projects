@@ -3,6 +3,9 @@
 .list
 
 .def overflows=r18
+.def buttonIn = r17
+.def temp = r16
+.def hexNum = r19
 
 .org 0x0000
 jmp Reset
@@ -32,28 +35,27 @@ Reset:
   MOV r9, r20
 
 
-  ldi r16, 0b00100011
-  out DDRB, r16
+  ldi temp, 0b00100011
+  out DDRB, temp
 
-  ldi r16, 0b11111110
-  out DDRD, r16
+  ldi temp, 0b00000100
+  out PortB, temp
 
-  out PortD, r0
-
-  ldi r30, 0b00000000
-  ldi r31, 0b00000000
+  ldi temp, 0b11111110
+  out DDRD, temp
 
   ldi r20, 0b00000100
   out TCCR0B, r20
 
-  ldi r16, 0b00000001
-  sts TIMSK0, r16
+  ldi temp, 0b00000001
+  sts TIMSK0, temp
 
   sei
 
   clr r20
   out TCNT0, r20
   MOV r25, r5
+
 
   rjmp Start
 
@@ -70,61 +72,77 @@ Start:
   rcall Light
   rcall Delay
 
+  rcall Delay
+
+  in buttonIn, PINB 
+  sbrc buttonIn, PB2 
+  rcall ButtonPressed 
+
+  rcall ButtonNotPressed 
+
   rjmp Start
 
 
+ButtonPressed:
+  sbi PortB, 5
+  rjmp Start
+
+
+ButtonNotPressed:
+  cbi PortB, 5
+
 Increment:
-  inc r30
+  inc hexNum
   
 Light:
-  cpi r30, 10
+  cpi hexNum, 10
   brne PC+2
-  clr r30
+  clr hexNum
 
-  cpi r30, 0
+  cpi hexNum, 0
   brne PC+2
   out PortD, r0
 
-  cpi r30, 1
+  cpi hexNum, 1
   brne PC+2
   out PortD, r1
 
-  cpi r30, 2
+  cpi hexNum, 2
   brne PC+2
   out PortD, r2
 
-  cpi r30, 3
+  cpi hexNum, 3
   brne PC+2
   out PortD, r3
 
-  cpi r30, 4
+  cpi hexNum, 4
   brne PC+2
   out PortD, r4
 
-  cpi r30, 5
+  cpi hexNum, 5
   brne PC+2
   out PortD, r5
 
-  cpi r30, 6
+  cpi hexNum, 6
   brne PC+2
   out PortD, r6
 
-  cpi r30, 7
+  cpi hexNum, 7
   brne PC+2
   out PortD, r7
 
-  cpi r30, 8
+  cpi hexNum, 8
   brne PC+2
   out PortD, r8
 
-  cpi r30, 9
+  cpi hexNum, 9
   brne PC+2
   out PortD, r9
   
 Delay:
   clr overflows
   sec_count:
-    cpi overflows,1
+    cpi overflows,10
   brne sec_count
   ret
   
