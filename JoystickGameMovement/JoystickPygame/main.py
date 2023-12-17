@@ -71,7 +71,10 @@ def main():
         #read from serial monitor
         if serialMonitor.in_waiting:
             readData = serialMonitor.readline()
-            movementData = readData.decode("UTF-8").rstrip('\n').split(":")
+            try:
+                movementData = readData.decode("UTF-8").rstrip('\n').split(":")
+            except Exception as e:
+                print(e)
             component = movementData[0]
             value = movementData[1]
             if component.startswith("switch"):
