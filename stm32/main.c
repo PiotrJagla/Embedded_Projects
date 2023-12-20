@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <string.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,20 +41,24 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c1;
-
+UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint16_t HDC_ADDR = 0x40;
+#define TEMP_WHOLE 0
+#define TEMP_DECIMAL 1
+#define HUMI_WHOLE 2
+#define HUMI_DECIMAL 3
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_I2C1_Init(void);
+static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
+void lightNumberOnDigit(uint8_t number, uint8_t digit);
 
 /* USER CODE END PFP */
 
@@ -69,8 +74,8 @@ static void MX_I2C1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	HAL_StatusTypeDef ret;
-	uint8_t buf[22];
+
+
 
   /* USER CODE END 1 */
 
@@ -93,69 +98,92 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_I2C1_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  HAL_StatusTypeDef ret;
+  uint8_t tempBuf[4];
+  uint8_t pcUartBuf[70];
 
+  strcpy(pcUartBuf, "Init\r\n");
+  HAL_UART_Transmit(&huart2, pcUartBuf, strlen(pcUartBuf), HAL_MAX_DELAY);
 
-//	uint8_t intBuf[2];
-//
-//	ret = HAL_I2C_Mem_Read(&hi2c1, (HDC_ADDR<<1)|0x01, 0xFF, 1, (uint8_t*)intBuf, 2,1000);
-//	char buffer[30];
-//	if(ret == HAL_OK) {
-//		sprintf(buffer, "MEM READ CORRECTLY: %d\r\n", ret);
-//	}
-//	else {
-//		sprintf(buffer, "MEM READ INCORRECTLY: %d\r\n", ret);
-//	}
-//	HAL_UART_Transmit(&huart2, buffer, strlen(buffer), HAL_MAX_DELAY);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
 
-
-
-
-//  	  uint16_t config_reg_value=0x1000;
-//  	uint8_t data_send[2];
-//
-//  	data_send[0]= (config_reg_value>>8);
-//  	data_send[1]= (config_reg_value&0x00ff);
-//
-//  	ret = HAL_I2C_Mem_Write(&hi2c1,(HDC_ADDR<<1),0x02,1,data_send,2,1000);
-//	if(ret != HAL_OK) {
-//		char buffer[30];
-//		sprintf(buffer, "Error with INIT: %d\r\n", ret);
-//		HAL_UART_Transmit(&huart2, buffer, strlen(buffer), HAL_MAX_DELAY);
-//	} else {
-//		char buffer[30];
-//		sprintf(buffer, "initialized correctly: %d\r\n", ret);
-//		HAL_UART_Transmit(&huart2, buffer, strlen(buffer), HAL_MAX_DELAY);
-//	}
-//
-//  	for(int addr = 0 ; addr <= 255 ; ++addr) {
-//  	  	ret = HAL_I2C_Mem_Read(&hi2c1,addr,0xFF,1,data_send,2,100);
-//
-//  	  	if(ret == HAL_OK) {
-//  	  		char buffer[30];
-//			sprintf(buffer, "initialized correctly: %d\r\n", ret);
-//			HAL_UART_Transmit(&huart2, buffer, strlen(buffer), HAL_MAX_DELAY);
-//  	  	}
-//	}
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
 
 
 
-
-
-
-
+  int counter = 0;
+  uint8_t temp1stDigit;
+  uint8_t temp2stDigit;
+  uint8_t temp3stDigit;
+  uint8_t temp4stDigit;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   while (1)
   {
+	  //RECIEVING DATA FROM SEND FROM ATMEGA
+
+//	  if(counter++ == 1) {
+//		  counter = 0;
+//		  ret = HAL_UART_Receive(&huart1, tempBuf, 4, 100);
+//		  if(ret != HAL_OK) {
+//			  //sprintf(pcUartBuf, "Error with uart: %d\r\n", ret);
+//			  sprintf(pcUartBuf, "Values after error: %d, %d, %d, %d, ERR: %d\r\n", tempBuf[0], tempBuf[1], tempBuf[2], tempBuf[3], ret);
+//		  }
+//		  else {
+//			  temp1stDigit = tempBuf[TEMP_WHOLE]/10;
+//			  temp2stDigit = tempBuf[TEMP_WHOLE]%10;
+//			  temp3stDigit = tempBuf[TEMP_DECIMAL]/10;
+//			  temp4stDigit = tempBuf[TEMP_DECIMAL]%10;
+//			  sprintf(pcUartBuf, "Data: %d, %d, %d, %d\r\n", tempBuf[0], tempBuf[1], tempBuf[2], tempBuf[3]);
+//		  }
+//		  HAL_UART_Transmit(&huart2, pcUartBuf, strlen(pcUartBuf), 1000);
+//	  }
+
+	  ret = HAL_UART_Receive(&huart1, tempBuf, 4, 200);
+	  if(ret != HAL_OK) {
+		  //sprintf(pcUartBuf, "Error with uart: %d\r\n", ret);
+		  sprintf(pcUartBuf, "Values after error: %d, %d, %d, %d, ERR: %d\r\n", tempBuf[0], tempBuf[1], tempBuf[2], tempBuf[3], ret);
+	  }
+	  else {
+		  temp1stDigit = tempBuf[TEMP_WHOLE]/10;
+		  temp2stDigit = tempBuf[TEMP_WHOLE]%10;
+		  temp3stDigit = tempBuf[TEMP_DECIMAL]/10;
+		  temp4stDigit = tempBuf[TEMP_DECIMAL]%10;
+		  sprintf(pcUartBuf, "Data: %d, %d, %d, %d\r\n", tempBuf[0], tempBuf[1], tempBuf[2], tempBuf[3]);
+	  }
+	  HAL_UART_Transmit(&huart2, pcUartBuf, strlen(pcUartBuf), 1000);
+
+	  //HAL_UART_Transmit(&huart2, pcUartBuf, strlen(pcUartBuf), 100);
+
+	  //LIGHTING HEX DISPLAYS
+
+	  lightNumberOnDigit(temp1stDigit, 1);
+	  HAL_Delay(1);
+	  lightNumberOnDigit(temp2stDigit, 2);
+	  HAL_Delay(1);
+	  lightNumberOnDigit(temp3stDigit, 3);
+	  HAL_Delay(1);
+	  lightNumberOnDigit(temp4stDigit, 4);
+	  HAL_Delay(1);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
-	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_10);
+
 
   }
   /* USER CODE END 3 */
@@ -198,8 +226,8 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C1;
-  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_HSI;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -207,50 +235,37 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief I2C1 Initialization Function
+  * @brief USART1 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_I2C1_Init(void)
+static void MX_USART1_UART_Init(void)
 {
 
-  /* USER CODE BEGIN I2C1_Init 0 */
+  /* USER CODE BEGIN USART1_Init 0 */
 
-  /* USER CODE END I2C1_Init 0 */
+  /* USER CODE END USART1_Init 0 */
 
-  /* USER CODE BEGIN I2C1_Init 1 */
+  /* USER CODE BEGIN USART1_Init 1 */
 
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x2000090E;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
   {
     Error_Handler();
   }
+  /* USER CODE BEGIN USART1_Init 2 */
 
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
+  /* USER CODE END USART1_Init 2 */
 
 }
 
@@ -305,12 +320,20 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10|LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10|LD2_Pin|GPIO_PIN_4|GPIO_PIN_5
+                          |GPIO_PIN_6, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_15, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -318,32 +341,233 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB10 LD2_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_10|LD2_Pin;
+  /*Configure GPIO pins : PB10 LD2_Pin PB4 PB5
+                           PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10|LD2_Pin|GPIO_PIN_4|GPIO_PIN_5
+                          |GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  /*Configure GPIO pins : PC7 PC10 PC11 PC12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA8 PA9 PA15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PD2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
 /* USER CODE BEGIN MX_GPIO_Init_2 */
-//  GPIO_InitStruct.Pin = GPIO_PIN_15;
-//  GPIO_InitStruct.Pull = GPIO_PULLUP;
-//  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-//
-//  GPIO_InitStruct.Pin = GPIO_PIN_7;
-//  GPIO_InitStruct.Pull = GPIO_PULLUP;
-//  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+void writeD4(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, pinState);
+}
+void writeD3(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, pinState);
+}
+void writeD2(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, pinState);
+}
+void writeD1(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, pinState);
+}
+void writeDP(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, pinState);
+}
+void writeG(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, pinState);
+}
+void writeF(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, pinState);
+}
+void writeE(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, pinState);
+}
+void writeD(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, pinState);
+}
+void writeC(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, pinState);
+}
+void writeB(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, pinState);
+}
+void writeA(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, pinState);
+}
+void lightZero() {
+	writeA(RESET);
+	writeB(SET);
+	writeC(SET);
+	writeD(SET);
+	writeE(SET);
+	writeF(SET);
+	writeG(SET);
+}
+void lightOne() {
+	writeA(RESET);
+	writeB(SET);
+	writeC(SET);
+	writeD(RESET);
+	writeE(RESET);
+	writeF(RESET);
+	writeG(RESET);
+}
+void lightTwo() {
+	writeA(SET);
+	writeB(SET);
+	writeC(RESET);
+	writeD(SET);
+	writeE(SET);
+	writeF(RESET);
+	writeG(SET);
+}
+void lightThree() {
+	writeA(SET);
+	writeB(SET);
+	writeC(SET);
+	writeD(SET);
+	writeE(RESET);
+	writeF(RESET);
+	writeG(SET);
+}
+void lightFour() {
+	writeA(RESET);
+	writeB(SET);
+	writeC(SET);
+	writeD(RESET);
+	writeE(RESET);
+	writeF(SET);
+	writeG(SET);
+}
+void lightFive() {
+	writeA(SET);
+	writeB(RESET);
+	writeC(SET);
+	writeD(SET);
+	writeE(RESET);
+	writeF(SET);
+	writeG(SET);
+}
+void lightSix() {
+	writeA(SET);
+	writeB(RESET);
+	writeC(SET);
+	writeD(SET);
+	writeE(SET);
+	writeF(SET);
+	writeG(SET);
+}
+void lightSeven() {
+	writeA(SET);
+	writeB(SET);
+	writeC(SET);
+	writeD(RESET);
+	writeE(RESET);
+	writeF(RESET);
+	writeG(RESET);
+}
+void lightEight() {
+	writeA(SET);
+	writeB(SET);
+	writeC(SET);
+	writeD(SET);
+	writeE(SET);
+	writeF(SET);
+	writeG(SET);
+}
+void lightNine() {
+	writeA(SET);
+	writeB(SET);
+	writeC(SET);
+	writeD(SET);
+	writeE(RESET);
+	writeF(SET);
+	writeG(SET);
+}
+void lightNumberOnDigit(uint8_t number, uint8_t digit) {
+	switch(digit) {
+	case 1:
+		writeD1(RESET);
+		writeD2(SET);
+		writeD3(SET);
+		writeD4(SET);
+		writeDP(RESET);
+		break;
+	case 2:
+		writeD1(SET);
+		writeD2(RESET);
+		writeD3(SET);
+		writeD4(SET);
+		writeDP(SET);
+		break;
+	case 3:
+		writeD1(SET);
+		writeD2(SET);
+		writeD3(RESET);
+		writeD4(SET);
+		writeDP(RESET);
+		break;
+	case 4:
+		writeD1(SET);
+		writeD2(SET);
+		writeD3(SET);
+		writeD4(RESET);
+		writeDP(RESET);
+		break;
+	}
+
+	switch(number) {
+	case 0:
+		lightZero();
+		break;
+	case 1:
+		lightOne();
+		break;
+	case 2:
+		lightTwo();
+		break;
+	case 3:
+		lightThree();
+		break;
+	case 4:
+		lightFour();
+		break;
+	case 5:
+		lightFive();
+		break;
+	case 6:
+		lightSix();
+		break;
+	case 7:
+		lightSeven();
+		break;
+	case 8:
+		lightEight();
+		break;
+	case 9:
+		lightNine();
+		break;
+	}
+}
 
 /* USER CODE END 4 */
 
