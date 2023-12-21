@@ -49,6 +49,8 @@ UART_HandleTypeDef huart2;
 #define TEMP_DECIMAL 1
 #define HUMI_WHOLE 2
 #define HUMI_DECIMAL 3
+#define READ_TEMP 0
+#define READ_HUMI 1
 
 /* USER CODE END PV */
 
@@ -121,13 +123,18 @@ int main(void)
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
 
+  lightHumidityIndicator();
+
 
 
   int counter = 0;
-  uint8_t temp1stDigit;
-  uint8_t temp2stDigit;
-  uint8_t temp3stDigit;
-  uint8_t temp4stDigit;
+  uint8_t digitOne;
+  uint8_t digitTwo;
+  uint8_t digitThree;
+  uint8_t digitFour;
+  GPIO_PinState buttonState;
+  int buttonLock = 1;
+  int readTempOrHumidity = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -136,49 +143,68 @@ int main(void)
   while (1)
   {
 	  //RECIEVING DATA FROM SEND FROM ATMEGA
+	  ret = HAL_UART_Receive(&huart1, tempBuf, 4, 100);
+	  if(counter++ == 100) {
+		  counter = 0;
+		  if(ret != HAL_OK) {
+			  //sprintf(pcUartBuf, "Error with uart: %d\r\n", ret);
+			  sprintf(pcUartBuf, "Values after error: %d, %d, %d, %d, ERR: %d\r\n", tempBuf[0], tempBuf[1], tempBuf[2], tempBuf[3], ret);
+		  }
+		  else {
+			  if(readTempOrHumidity == READ_TEMP) {
+				  digitOne = tempBuf[TEMP_WHOLE]/10;
+				  digitTwo = tempBuf[TEMP_WHOLE]%10;
+				  digitThree = tempBuf[TEMP_DECIMAL]/10;
+				  digitFour = tempBuf[TEMP_DECIMAL]%10;
+				  lightTempIndicator();
+			  } else if(readTempOrHumidity == READ_HUMI) {
+				  digitOne = tempBuf[HUMI_WHOLE]/10;
+				  digitTwo = tempBuf[HUMI_WHOLE]%10;
+				  digitThree = tempBuf[HUMI_DECIMAL]/10;
+				  digitFour = tempBuf[HUMI_DECIMAL]%10;
+				  lightHumidityIndicator();
+			  }
 
-//	  if(counter++ == 1) {
-//		  counter = 0;
-//		  ret = HAL_UART_Receive(&huart1, tempBuf, 4, 100);
-//		  if(ret != HAL_OK) {
-//			  //sprintf(pcUartBuf, "Error with uart: %d\r\n", ret);
-//			  sprintf(pcUartBuf, "Values after error: %d, %d, %d, %d, ERR: %d\r\n", tempBuf[0], tempBuf[1], tempBuf[2], tempBuf[3], ret);
-//		  }
-//		  else {
-//			  temp1stDigit = tempBuf[TEMP_WHOLE]/10;
-//			  temp2stDigit = tempBuf[TEMP_WHOLE]%10;
-//			  temp3stDigit = tempBuf[TEMP_DECIMAL]/10;
-//			  temp4stDigit = tempBuf[TEMP_DECIMAL]%10;
-//			  sprintf(pcUartBuf, "Data: %d, %d, %d, %d\r\n", tempBuf[0], tempBuf[1], tempBuf[2], tempBuf[3]);
-//		  }
-//		  HAL_UART_Transmit(&huart2, pcUartBuf, strlen(pcUartBuf), 1000);
-//	  }
-
-	  ret = HAL_UART_Receive(&huart1, tempBuf, 4, 200);
-	  if(ret != HAL_OK) {
-		  //sprintf(pcUartBuf, "Error with uart: %d\r\n", ret);
-		  sprintf(pcUartBuf, "Values after error: %d, %d, %d, %d, ERR: %d\r\n", tempBuf[0], tempBuf[1], tempBuf[2], tempBuf[3], ret);
+			  sprintf(pcUartBuf, "Data: %d, %d, %d, %d\r\n", tempBuf[0], tempBuf[1], tempBuf[2], tempBuf[3]);
+		  }
+		  //HAL_UART_Transmit(&huart2, pcUartBuf, strlen(pcUartBuf), 1000);
 	  }
-	  else {
-		  temp1stDigit = tempBuf[TEMP_WHOLE]/10;
-		  temp2stDigit = tempBuf[TEMP_WHOLE]%10;
-		  temp3stDigit = tempBuf[TEMP_DECIMAL]/10;
-		  temp4stDigit = tempBuf[TEMP_DECIMAL]%10;
-		  sprintf(pcUartBuf, "Data: %d, %d, %d, %d\r\n", tempBuf[0], tempBuf[1], tempBuf[2], tempBuf[3]);
-	  }
-	  HAL_UART_Transmit(&huart2, pcUartBuf, strlen(pcUartBuf), 1000);
 
-	  //HAL_UART_Transmit(&huart2, pcUartBuf, strlen(pcUartBuf), 100);
+	  if(buttonLock == 1 && HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6) == GPIO_PIN_RESET) {
+		  buttonLock = 0;
+		  readTempOrHumidity = !readTempOrHumidity;
+		  if(readTempOrHumidity == READ_TEMP) {
+			  digitOne = tempBuf[TEMP_WHOLE]/10;
+			  digitTwo = tempBuf[TEMP_WHOLE]%10;
+			  digitThree = tempBuf[TEMP_DECIMAL]/10;
+			  digitFour = tempBuf[TEMP_DECIMAL]%10;
+			  lightTempIndicator();
+		  } else if(readTempOrHumidity == READ_HUMI) {
+			  digitOne = tempBuf[HUMI_WHOLE]/10;
+			  digitTwo = tempBuf[HUMI_WHOLE]%10;
+			  digitThree = tempBuf[HUMI_DECIMAL]/10;
+			  digitFour = tempBuf[HUMI_DECIMAL]%10;
+			  lightHumidityIndicator();
+		  }
+	  } else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6) == GPIO_PIN_SET) {
+		  buttonLock = 1;
+	  }
+
+
+
+
+
+
 
 	  //LIGHTING HEX DISPLAYS
 
-	  lightNumberOnDigit(temp1stDigit, 1);
+	  lightNumberOnDigit(digitOne, 1);
 	  HAL_Delay(1);
-	  lightNumberOnDigit(temp2stDigit, 2);
+	  lightNumberOnDigit(digitTwo, 2);
 	  HAL_Delay(1);
-	  lightNumberOnDigit(temp3stDigit, 3);
+	  lightNumberOnDigit(digitThree, 3);
 	  HAL_Delay(1);
-	  lightNumberOnDigit(temp4stDigit, 4);
+	  lightNumberOnDigit(digitFour, 4);
 	  HAL_Delay(1);
     /* USER CODE END WHILE */
 
@@ -323,14 +349,16 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10|LD2_Pin|GPIO_PIN_4|GPIO_PIN_5
-                          |GPIO_PIN_6, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_8|GPIO_PIN_9
+                          |GPIO_PIN_15, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2|GPIO_PIN_10|LD2_Pin|GPIO_PIN_14
+                          |GPIO_PIN_15|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6
+                          |GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_15, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
@@ -341,14 +369,31 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB10 LD2_Pin PB4 PB5
-                           PB6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10|LD2_Pin|GPIO_PIN_4|GPIO_PIN_5
-                          |GPIO_PIN_6;
+  /*Configure GPIO pins : PA5 PA6 PA8 PA9
+                           PA15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_8|GPIO_PIN_9
+                          |GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB2 PB10 LD2_Pin PB14
+                           PB15 PB4 PB5 PB6
+                           PB8 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_10|LD2_Pin|GPIO_PIN_14
+                          |GPIO_PIN_15|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6
+                          |GPIO_PIN_8|GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PC7 PC10 PC11 PC12 */
   GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
@@ -356,13 +401,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PA8 PA9 PA15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PD2 */
   GPIO_InitStruct.Pin = GPIO_PIN_2;
@@ -377,6 +415,24 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void lightTempIndicator() {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15,RESET); //A
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14,RESET); //B
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9,RESET); //C
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6,SET); //D
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2,SET); //E
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,SET); //F
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8,SET); //G
+}
+void lightHumidityIndicator() {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15,RESET); //A
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14,RESET); //B
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9,SET); //C
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6,RESET); //D
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2,SET); //E
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,SET); //F
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8,SET); //G
+}
 void writeD4(GPIO_PinState pinState) {
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, pinState);
 }
@@ -414,13 +470,13 @@ void writeA(GPIO_PinState pinState) {
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, pinState);
 }
 void lightZero() {
-	writeA(RESET);
+	writeA(SET);
 	writeB(SET);
 	writeC(SET);
 	writeD(SET);
 	writeE(SET);
 	writeF(SET);
-	writeG(SET);
+	writeG(RESET);
 }
 void lightOne() {
 	writeA(RESET);
