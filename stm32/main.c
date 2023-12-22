@@ -41,6 +41,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim16;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
@@ -59,8 +61,16 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_TIM16_Init(void);
 /* USER CODE BEGIN PFP */
+HAL_StatusTypeDef ret;
+uint8_t tempBuf[4];
 void lightNumberOnDigit(uint8_t number, uint8_t digit);
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
+	if(huart->Instance == huart1.Instance) {
+		HAL_UART_Receive_IT(&huart1, tempBuf, 4);
+	}
+}
 
 /* USER CODE END PFP */
 
@@ -101,30 +111,15 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_USART1_UART_Init();
+  MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
-  HAL_StatusTypeDef ret;
-  uint8_t tempBuf[4];
+
+  uint16_t timer_val;
+
+
   uint8_t pcUartBuf[70];
 
-  strcpy(pcUartBuf, "Init\r\n");
-  HAL_UART_Transmit(&huart2, pcUartBuf, strlen(pcUartBuf), HAL_MAX_DELAY);
-
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
-
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
-
-  lightHumidityIndicator();
-
+  //HAL_TIM_Base_Start_IT(&htim16);
 
 
   int counter = 0;
@@ -135,6 +130,7 @@ int main(void)
   GPIO_PinState buttonState;
   int buttonLock = 1;
   int readTempOrHumidity = 0;
+  HAL_UART_Receive_IT(&huart1, tempBuf, 4);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -143,8 +139,8 @@ int main(void)
   while (1)
   {
 	  //RECIEVING DATA FROM SEND FROM ATMEGA
-	  ret = HAL_UART_Receive(&huart1, tempBuf, 4, 100);
-	  if(counter++ == 100) {
+	  //ret = HAL_UART_Receive(&huart1, tempBuf, 4, 100);
+	  if(counter++ == 30) {
 		  counter = 0;
 		  if(ret != HAL_OK) {
 			  //sprintf(pcUartBuf, "Error with uart: %d\r\n", ret);
@@ -167,7 +163,7 @@ int main(void)
 
 			  sprintf(pcUartBuf, "Data: %d, %d, %d, %d\r\n", tempBuf[0], tempBuf[1], tempBuf[2], tempBuf[3]);
 		  }
-		  //HAL_UART_Transmit(&huart2, pcUartBuf, strlen(pcUartBuf), 1000);
+		  HAL_UART_Transmit(&huart2, pcUartBuf, strlen(pcUartBuf), 100);
 	  }
 
 	  if(buttonLock == 1 && HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6) == GPIO_PIN_RESET) {
@@ -189,12 +185,6 @@ int main(void)
 	  } else if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6) == GPIO_PIN_SET) {
 		  buttonLock = 1;
 	  }
-
-
-
-
-
-
 
 	  //LIGHTING HEX DISPLAYS
 
@@ -252,12 +242,45 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_TIM16;
   PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
+  PeriphClkInit.Tim16ClockSelection = RCC_TIM16CLK_HCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief TIM16 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM16_Init(void)
+{
+
+  /* USER CODE BEGIN TIM16_Init 0 */
+
+  /* USER CODE END TIM16_Init 0 */
+
+  /* USER CODE BEGIN TIM16_Init 1 */
+
+  /* USER CODE END TIM16_Init 1 */
+  htim16.Instance = TIM16;
+  htim16.Init.Prescaler = 8000-1;
+  htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim16.Init.Period = 5000 -1;
+  htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim16.Init.RepetitionCounter = 0;
+  htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim16) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM16_Init 2 */
+
+  /* USER CODE END TIM16_Init 2 */
+
 }
 
 /**
@@ -415,6 +438,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+	if(htim == &htim16) {
+		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+	}
+}
 void lightTempIndicator() {
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15,RESET); //A
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14,RESET); //B
