@@ -8,7 +8,9 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/piotrek/GitHub/EmbeddedDemoProjects/c_game/game.c" "CMakeFiles/gamelib.dir/game.c.o" "gcc" "CMakeFiles/gamelib.dir/game.c.o.d"
   "/home/piotrek/GitHub/EmbeddedDemoProjects/c_game/main.c" "CMakeFiles/gamelib.dir/main.c.o" "gcc" "CMakeFiles/gamelib.dir/main.c.o.d"
+  "/home/piotrek/GitHub/EmbeddedDemoProjects/c_game/rect.c" "CMakeFiles/gamelib.dir/rect.c.o" "gcc" "CMakeFiles/gamelib.dir/rect.c.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

@@ -1,1 +1,1 @@
-/usr/bin/cc CMakeFiles/gamelib.dir/main.c.o -o gamelib  -lraylib -lpthread 
+/usr/bin/cc -g CMakeFiles/gamelib.dir/main.c.o CMakeFiles/gamelib.dir/rect.c.o CMakeFiles/gamelib.dir/game.c.o -o gamelib  -lraylib -lpthread 

@@ -129,6 +129,30 @@ gamelib/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/build
 .PHONY : gamelib/fast
 
+game.o: game.c.o
+.PHONY : game.o
+
+# target to build an object file
+game.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/game.c.o
+.PHONY : game.c.o
+
+game.i: game.c.i
+.PHONY : game.i
+
+# target to preprocess a source file
+game.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/game.c.i
+.PHONY : game.c.i
+
+game.s: game.c.s
+.PHONY : game.s
+
+# target to generate assembly for a file
+game.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/game.c.s
+.PHONY : game.c.s
+
 main.o: main.c.o
 .PHONY : main.o
 
@@ -153,6 +177,30 @@ main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/main.c.s
 .PHONY : main.c.s
 
+rect.o: rect.c.o
+.PHONY : rect.o
+
+# target to build an object file
+rect.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/rect.c.o
+.PHONY : rect.c.o
+
+rect.i: rect.c.i
+.PHONY : rect.i
+
+# target to preprocess a source file
+rect.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/rect.c.i
+.PHONY : rect.c.i
+
+rect.s: rect.c.s
+.PHONY : rect.s
+
+# target to generate assembly for a file
+rect.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/rect.c.s
+.PHONY : rect.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -162,9 +210,15 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... gamelib"
+	@echo "... game.o"
+	@echo "... game.i"
+	@echo "... game.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... rect.o"
+	@echo "... rect.i"
+	@echo "... rect.s"
 .PHONY : help
 
 
