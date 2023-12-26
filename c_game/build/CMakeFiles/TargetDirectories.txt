@@ -1,0 +1,3 @@
+/home/piotrek/GitHub/EmbeddedDemoProjects/c_game/build/CMakeFiles/gamelib.dir
+/home/piotrek/GitHub/EmbeddedDemoProjects/c_game/build/CMakeFiles/edit_cache.dir
+/home/piotrek/GitHub/EmbeddedDemoProjects/c_game/build/CMakeFiles/rebuild_cache.dir
