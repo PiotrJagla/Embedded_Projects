@@ -9,35 +9,8 @@
 
 
 
-void writeC8(GPIO_PinState pinState) {
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, pinState);
-}
-void writeC7(GPIO_PinState pinState) {
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, pinState);
-}
-void writeR2(GPIO_PinState pinState) {
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, pinState);
-}
 void writeC1(GPIO_PinState pinState) {
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, pinState);
-}
-void writeR4(GPIO_PinState pinState) {
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, pinState);
-}
-void writeC6(GPIO_PinState pinState) {
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, pinState);
-}
-void writeC4(GPIO_PinState pinState) {
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, pinState);
-}
-void writeR1(GPIO_PinState pinState) {
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, pinState);
-}
-void writeR5(GPIO_PinState pinState) {
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, pinState);
-}
-void writeR7(GPIO_PinState pinState) {
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, pinState);
 }
 void writeC2(GPIO_PinState pinState) {
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, pinState);
@@ -45,17 +18,45 @@ void writeC2(GPIO_PinState pinState) {
 void writeC3(GPIO_PinState pinState) {
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, pinState);
 }
-void writeR8(GPIO_PinState pinState) {
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, pinState);
+void writeC4(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, pinState);
 }
 void writeC5(GPIO_PinState pinState) {
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, pinState);
 }
-void writeR6(GPIO_PinState pinState) {
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, pinState);
+void writeC6(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, pinState);
+}
+void writeC7(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, pinState);
+}
+void writeC8(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, pinState);
+}
+
+void writeR1(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, pinState);
+}
+void writeR2(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, pinState);
 }
 void writeR3(GPIO_PinState pinState) {
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, pinState);
+}
+void writeR4(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, pinState);
+}
+void writeR5(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, pinState);
+}
+void writeR7(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, pinState);
+}
+void writeR8(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, pinState);
+}
+void writeR6(GPIO_PinState pinState) {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, pinState);
 }
 
 
