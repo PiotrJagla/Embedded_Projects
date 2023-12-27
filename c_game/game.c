@@ -19,8 +19,6 @@ void initGame() {
   InitWindow(windowWidth,windowHeight, "basic window");
   player = (struct rect){0,0,50,50};
 
-
-
   tilemap = (int**)malloc(tilemapHeight * sizeof(int*));
   for(int i = 0 ; i < tilemapHeight; ++i) {
     tilemap[i] = (int*)malloc(tilemapWidth*sizeof(int));
@@ -28,7 +26,6 @@ void initGame() {
   tilemap[0][0] = 1;
   tilemap[0][2] = 1;
   tilemap[2][2] = 1;
-
 }
 
 void updateGame() {
