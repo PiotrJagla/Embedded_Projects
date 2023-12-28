@@ -13,8 +13,9 @@ uint8_t gameMatrix[8] = {0,32,0,0,0,0,0,0};
 struct player snake = {
 		{2,0,0,0,0,0,0,0,0,0,0},
 		{4,0,0,0,0,0,0,0,0,0,0},
-		1,0};
+		1,0,1};
 uint8_t isInGame = 0;
+uint8_t dotCollected = 0;
 
 void pushRandomDot() {
 	uint8_t randVal = HAL_GetTick()%64;
@@ -39,6 +40,8 @@ void initSnakeGame(){
 	snake.yPositions[0] = 4;
 	snake.xDir = 1;
 	snake.yDir = 0;
+	snake.points = 1;
+
 
 	isInGame = 1;
 	pushRandomDot();
@@ -52,11 +55,39 @@ void initSnakeGame(){
 void updateSnakeGame(){
 	if(isInGame == 1) {
 		//Remove previous position
-		gameMatrix[snake.yPositions[0]] &= ~(1<<snake.xPositions[0]);
+		if(dotCollected == 0) {
+			gameMatrix[snake.yPositions[0]] &= ~(1<<snake.xPositions[0]);
+			//Update pos
+			if(snake.points > 1) {
+				snake.yPositions[snake.points - 1] = 0;
+				snake.xPositions[snake.points - 1] = 0;
+				for(uint8_t i = snake.points - 2 ; i >= 0; ++i) {
+					snake.xPositions[i+1] = snake.xPositions[i];
+					snake.yPositions[i+1] = snake.yPositions[i];
+				}
+			}
+			snake.xPositions[0] += snake.xDir;
+			snake.yPositions[0] += snake.yDir;
+		} else {
+			snake.points++;
+			//if dot is collected dont remove last index
+			if(snake.points > 1) {
+				for(uint8_t i = snake.points - 1 ; i >= 0; ++i) {
+					snake.xPositions[i+1] = snake.xPositions[i];
+					snake.yPositions[i+1] = snake.yPositions[i];
+				}
+				snake.xPositions[0] += snake.xDir;
+				snake.yPositions[0] += snake.yDir;
+			} else {
+				snake.xPositions[1] = snake.xPositions[0];
+				snake.yPositions[1] = snake.yPositions[0];
 
-		//Update pos
-		snake.xPositions[0] += snake.xDir;
-		snake.yPositions[0] += snake.yDir;
+				snake.xPositions[0] += snake.xDir;
+				snake.yPositions[0] += snake.yDir;
+			}
+
+		}
+
 
 		//Is out of bounds
 		if(snake.xPositions[0] >= MATRIX_SIZE) {
@@ -79,6 +110,8 @@ void updateSnakeGame(){
 		if(gameMatrix[snake.yPositions[0]] & (1<<snake.xPositions[0])) {
 			pushRandomDot();
 
+			dotCollected = 1;
+
 			//blink when dot is collected
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); //R
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);   //G
@@ -87,10 +120,15 @@ void updateSnakeGame(){
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); //R
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);   //G
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET); //B
+		} else {
+			dotCollected = 0;
 		}
 
 
 		//Draw new position
+		for(uint8_t i = 0 ; i < snake.points ; ++i) {
+
+		}
 		gameMatrix[snake.yPositions[0]] |= (1<<snake.xPositions[0]);
 	}
 }
