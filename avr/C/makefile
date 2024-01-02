@@ -4,7 +4,10 @@ default: compile upload clean
 
 compile:
 	$(COMPILE) -c led.c -o led.o 
-	$(COMPILE) -o led.elf led.o
+	$(COMPILE) -c usartUtils.c -o usartUtils.o 
+	$(COMPILE) -c ADC_Utils.c -o ADC_Utils.o 
+	$(COMPILE) -o led.elf led.o usartUtils.o ADC_Utils.o
+	avr-objdump -h -S led.elf > led.lst
 	avr-objcopy -j .text -j .data -O ihex led.elf led.hex
 	avr-size --format=avr --mcu=atmega328p led.elf
 
