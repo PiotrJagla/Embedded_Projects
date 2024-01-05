@@ -27,8 +27,9 @@ void pushRandomDot() {
 
 void printSnakeState() {
 	char str[80];
-	sprintf(str, "\n\rp: %hu, x1: %hu, y1: %hu, x2: %hu, y2: %hu\r\n", snake.points, snake.xPositions[0], snake.yPositions[0],
-			snake.xPositions[1], snake.yPositions[1]);
+	sprintf(str, "\n\rp: %hu, x1: %hu, y1: %hu, x2: %hu, y2: %hu, x3: %hu, y3: %hu\r\n",
+			snake.points, snake.xPositions[0], snake.yPositions[0],
+			snake.xPositions[1], snake.yPositions[1], snake.xPositions[2], snake.yPositions[2]);
 	HAL_UART_Transmit(&huart2,str, strlen(str), HAL_MAX_DELAY);
 }
 
@@ -60,70 +61,43 @@ void initSnakeGame(){
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET); //B
 }
 
+int8_t isOutOfBounds() {
+		if(snake.xPositions[0] >= MATRIX_SIZE) {
+			return 1;
+		} else if(snake.xPositions[0] < 0) {
+			return 1;
+		}
+		if(snake.yPositions[0] >= MATRIX_SIZE) {
+			return 1;
+		} else if(snake.yPositions[0] < 0) {
+			return 1;
+		}
+		return 0;
+}
+
 void updateSnakeGame(){
 	if(isInGame == 1) {
 		if(dotCollected == 0) {
-			//Remove previous position
 			gameMatrix[snake.yPositions[snake.points - 1]] &= ~(1<<snake.xPositions[snake.points-1]);
-			//Update pos
-			if(snake.points > 2) {
-				snake.yPositions[snake.points - 1] = 0;
-				snake.xPositions[snake.points - 1] = 0;
-				for(uint8_t i = snake.points - 2 ; i >= 0; ++i) {
-					snake.xPositions[i+1] = snake.xPositions[i];
-					snake.yPositions[i+1] = snake.yPositions[i];
-				}
-				snake.xPositions[0] += snake.xDir;
-				snake.yPositions[0] += snake.yDir;
-			} else if(snake.points == 2){
-				snake.xPositions[1] = snake.xPositions[0];
-				snake.yPositions[1] = snake.yPositions[0];
-
-				snake.xPositions[0] += snake.xDir;
-				snake.yPositions[0] += snake.yDir;
-			} else if(snake.points == 1){
-				snake.xPositions[0] += snake.xDir;
-				snake.yPositions[0] += snake.yDir;
-			}
 		} else {
-			printSnakeState();
 			snake.points++;
-			//if dot is collected dont remove last index
-			if(snake.points > 2) {
-				for(uint8_t i = snake.points - 1 ; i >= 0; ++i) {
-					snake.xPositions[i+1] = snake.xPositions[i];
-					snake.yPositions[i+1] = snake.yPositions[i];
-				}
-				snake.xPositions[0] += snake.xDir;
-				snake.yPositions[0] += snake.yDir;
-			} else {
-				snake.xPositions[1] = snake.xPositions[0];
-				snake.yPositions[1] = snake.yPositions[0];
-
-				snake.xPositions[0] += snake.xDir;
-				snake.yPositions[0] += snake.yDir;
-			}
-			printSnakeState();
 		}
+		for(int8_t i = snake.points - 2 ; i >= 0; --i) {
+			snake.xPositions[i+1] = snake.xPositions[i];
+			snake.yPositions[i+1] = snake.yPositions[i];
+		}
+		snake.xPositions[0] += snake.xDir;
+		snake.yPositions[0] += snake.yDir;
 
 
 		//Is out of bounds
-		if(snake.xPositions[0] >= MATRIX_SIZE) {
+		if(isOutOfBounds() == 1) {
 			isInGame = 0;
-		} else if(snake.xPositions[0] < 0) {
-			isInGame = 0;
-		}
-		if(snake.yPositions[0] >= MATRIX_SIZE) {
-			isInGame = 0;
-		} else if(snake.yPositions[0] < 0) {
-			isInGame = 0;
-		}
-
-		if(isInGame == 0) {
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET); //R
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);   //G
 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET); //B
 		}
+
 
 		//dot collected
 		if(gameMatrix[snake.yPositions[0]] & (1<<snake.xPositions[0])) {
@@ -141,32 +115,32 @@ void updateSnakeGame(){
 
 
 		//Draw new position
-		for(uint8_t i = 0 ; i < snake.points ; ++i) {
-
-		}
 		gameMatrix[snake.yPositions[0]] |= (1<<snake.xPositions[0]);
 	}
 }
 
 void updateDirection(uint8_t yJoystickVal, uint8_t xJoystickVal) {
-	if(xJoystickVal < 10) {
-		snake.yDir = 1;
-		snake.xDir = 0;
-	}
-	else if(xJoystickVal > 240) {
-		snake.yDir = -1;
-		snake.xDir = 0;
-	}
-
-	if(yJoystickVal < 10) {
-		snake.xDir = -1;
-		snake.yDir = 0;
-	}
-	else if(yJoystickVal > 240) {
-		snake.xDir = 1;
-		snake.yDir = 0;
+	if(snake.yDir == 0) {
+		if(xJoystickVal < 10) {
+				snake.yDir = 1;
+				snake.xDir = 0;
+		}
+		else if(xJoystickVal > 240) {
+			snake.yDir = -1;
+			snake.xDir = 0;
+		}
 	}
 
+	if(snake.xDir == 0) {
+		if(yJoystickVal < 10) {
+				snake.xDir = -1;
+				snake.yDir = 0;
+			}
+			else if(yJoystickVal > 240) {
+				snake.xDir = 1;
+				snake.yDir = 0;
+			}
+	}
 }
 
 

@@ -191,9 +191,8 @@ void GameLogic(void *argument)
 		updateDirection(adc_buf[ADC_Y], adc_buf[ADC_X]);
 		updateSnakeGame();
 
-		osDelay(300);
+		osDelay(200 + adc_buf[ADC_POT] - 150);
 
-//		timerVal = __HAL_TIM_GET_COUNTER(&htim16);
   }
   /* USER CODE END GameLogic */
 }
