@@ -1,8 +1,4 @@
-#include <raylib.h>
-#include <stdio.h>
-#include <pthread.h>
 #include "game.h"
-
 
 int main() {
 
