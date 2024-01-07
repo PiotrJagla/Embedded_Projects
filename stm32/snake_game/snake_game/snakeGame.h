@@ -13,8 +13,8 @@
 #define MATRIX_SIZE 8
 
 struct player{
-	int8_t xPositions[10];
-	int8_t yPositions[10];
+	int8_t xPositions[30];
+	int8_t yPositions[30];
 	int8_t xDir;
 	int8_t yDir;
 	int8_t points;

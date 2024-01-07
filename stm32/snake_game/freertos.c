@@ -32,6 +32,7 @@
 #include "dot_matrix_driver.h"
 #include "tim.h"
 #include "snakeGame.h"
+#include "hexDisplaysDriver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -71,6 +72,13 @@ const osThreadAttr_t GameLogicTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
+/* Definitions for pointsDisplayTa */
+osThreadId_t pointsDisplayTaHandle;
+const osThreadAttr_t pointsDisplayTa_attributes = {
+  .name = "pointsDisplayTa",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -79,6 +87,7 @@ const osThreadAttr_t GameLogicTask_attributes = {
 
 void MatrixRender(void *argument);
 void GameLogic(void *argument);
+void pointsDisplay(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -117,6 +126,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of GameLogicTask */
   GameLogicTaskHandle = osThreadNew(GameLogic, NULL, &GameLogicTask_attributes);
+
+  /* creation of pointsDisplayTa */
+  pointsDisplayTaHandle = osThreadNew(pointsDisplay, NULL, &pointsDisplayTa_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -172,6 +184,7 @@ void GameLogic(void *argument)
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);   //G
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET); //B
 
+
 	initSnakeGame();
 
   /* Infinite loop */
@@ -195,6 +208,27 @@ void GameLogic(void *argument)
 
   }
   /* USER CODE END GameLogic */
+}
+
+/* USER CODE BEGIN Header_pointsDisplay */
+/**
+* @brief Function implementing the pointsDisplayTa thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_pointsDisplay */
+void pointsDisplay(void *argument)
+{
+  /* USER CODE BEGIN pointsDisplay */
+  /* Infinite loop */
+  while(1)
+  {
+  	lightNumberOnDigit(snake.points%10, 2);
+    osDelay(3);
+  	lightNumberOnDigit(snake.points/10, 1);
+  	osDelay(3);
+  }
+  /* USER CODE END pointsDisplay */
 }
 
 /* Private application code --------------------------------------------------*/
