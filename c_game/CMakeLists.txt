@@ -6,6 +6,7 @@ add_executable(${PROJECT_NAME}
   main.c
   rect.c
   game.c
+  colors.c
 )
 
 target_link_libraries(${PROJECT_NAME}

@@ -129,6 +129,30 @@ gamelib/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/build
 .PHONY : gamelib/fast
 
+colors.o: colors.c.o
+.PHONY : colors.o
+
+# target to build an object file
+colors.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/colors.c.o
+.PHONY : colors.c.o
+
+colors.i: colors.c.i
+.PHONY : colors.i
+
+# target to preprocess a source file
+colors.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/colors.c.i
+.PHONY : colors.c.i
+
+colors.s: colors.c.s
+.PHONY : colors.s
+
+# target to generate assembly for a file
+colors.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gamelib.dir/build.make CMakeFiles/gamelib.dir/colors.c.s
+.PHONY : colors.c.s
+
 game.o: game.c.o
 .PHONY : game.o
 
@@ -210,6 +234,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... gamelib"
+	@echo "... colors.o"
+	@echo "... colors.i"
+	@echo "... colors.s"
 	@echo "... game.o"
 	@echo "... game.i"
 	@echo "... game.s"

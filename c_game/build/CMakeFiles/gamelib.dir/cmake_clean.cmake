@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/gamelib.dir/colors.c.o"
+  "CMakeFiles/gamelib.dir/colors.c.o.d"
   "CMakeFiles/gamelib.dir/game.c.o"
   "CMakeFiles/gamelib.dir/game.c.o.d"
   "CMakeFiles/gamelib.dir/main.c.o"

@@ -7,8 +7,9 @@ struct rect{
     float y;
     float width;
     float height;
+    Color c;
 };
 
-void DrawRect(const struct rect* r, Color c);
+void DrawRect(const struct rect* r);
 
 #endif
