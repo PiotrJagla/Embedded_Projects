@@ -9,7 +9,7 @@ const int windowHeight = 800;
 
 const int tilemapWidth = windowWidth/gridSize;
 const int tilemapHeight = windowHeight/gridSize;
-int** tilemap;
+struct rect** tilemap;
 
 
 struct rect player;
