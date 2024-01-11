@@ -38,17 +38,31 @@ void loop() {
   gyro_z = Wire.read()<<8 | Wire.read(); // reading registers: 0x47 (GYRO_ZOUT_H) and 0x48 (GYRO_ZOUT_L)
   
   
+  
   //Serial.print("aX = "); Serial.print(convert_int16_to_str(accelerometer_x));
   //Serial.print(" | aY = "); Serial.print(convert_int16_to_str(accelerometer_y));
   //Serial.print(" | aZ = "); Serial.print(convert_int16_to_str(accelerometer_z));
   // the following equation was taken from the documentation [MPU-6000/MPU-6050 Register Map and Description, p.30]
   //Serial.print(" | tmp = "); Serial.print(temperature/340.00+36.53);
   
-  Serial.write(gyro_x);
-  Serial.write(gyro_y);
-  Serial.write(gyro_z);
-  Serial.println();
+  // Serial.write(gyro_x);
+  // Serial.write(gyro_y);
+  // Serial.write(gyro_z);
+  // Serial.print("gX = "); Serial.print(convert_int16_to_str(gyro_x));
+  // Serial.print(" | gY = "); Serial.print(convert_int16_to_str(gyro_y));
+  // Serial.print(" | gZ = "); Serial.print(convert_int16_to_str(gyro_z));
+  // Serial.println();
+  
+  Serial.write((int8_t)gyro_x);
+  Serial.write((int8_t)(gyro_x >> 8));
+  Serial.write((int8_t)gyro_y);
+  Serial.write((int8_t)(gyro_y >> 8));
+  Serial.write((int8_t)gyro_z);
+  Serial.write((int8_t)(gyro_z >> 8));
+  
+  
+  
   
   // delay
-  delay(1000);
+  delay(50);
 }

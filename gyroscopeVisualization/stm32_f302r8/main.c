@@ -87,7 +87,11 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+	int8_t data[6];
+	char msg[40];
+
 
   /* USER CODE END 2 */
 
@@ -95,6 +99,20 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+  	if(HAL_UART_Receive(&huart1, data, 6, 100) == HAL_TIMEOUT) {
+			sprintf(msg, "TIMEOUT\r\n");
+			HAL_UART_Transmit(&huart2, msg, 10, HAL_MAX_DELAY);
+
+  	} else {
+			sprintf(msg, "x: %d  , y: %d  , z: %d  \r\n",data[1] << 8 | data[0], data[3] << 8 | data[2], data[5] << 8 | data[4]);
+			HAL_UART_Transmit(&huart2, msg, strlen(msg), HAL_MAX_DELAY);
+  	}
+
+  	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+
+//  	int16_t val = data[1]<<8 | data[0];
+
+  	HAL_Delay(40);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -110,6 +128,7 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -135,6 +154,12 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
