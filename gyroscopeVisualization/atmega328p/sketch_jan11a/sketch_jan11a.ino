@@ -63,6 +63,7 @@ void loop() {
   
   
   
+  
   // delay
-  delay(50);
+  delay(20);
 }
