@@ -48,17 +48,17 @@ void loop() {
   // Serial.write(gyro_x);
   // Serial.write(gyro_y);
   // Serial.write(gyro_z);
-  // Serial.print("gX = "); Serial.print(convert_int16_to_str(gyro_x));
-  // Serial.print(" | gY = "); Serial.print(convert_int16_to_str(gyro_y));
-  // Serial.print(" | gZ = "); Serial.print(convert_int16_to_str(gyro_z));
-  // Serial.println();
+  Serial.print("|x="); Serial.print(gyro_x);
+  Serial.print("|y="); Serial.print(gyro_y);
+  Serial.print("|z="); Serial.print(gyro_z);
   
-  Serial.write((int8_t)gyro_x);
-  Serial.write((int8_t)(gyro_x >> 8));
-  Serial.write((int8_t)gyro_y);
-  Serial.write((int8_t)(gyro_y >> 8));
-  Serial.write((int8_t)gyro_z);
-  Serial.write((int8_t)(gyro_z >> 8));
+  
+  // Serial.write((int8_t)gyro_x);
+  // Serial.write((int8_t)(gyro_x >> 8));
+  // Serial.write((int8_t)gyro_y);
+  // Serial.write((int8_t)(gyro_y >> 8));
+  // Serial.write((int8_t)gyro_z);
+  // Serial.write((int8_t)(gyro_z >> 8));
   
   
   
