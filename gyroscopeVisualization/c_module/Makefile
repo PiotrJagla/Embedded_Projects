@@ -9,7 +9,7 @@ BINARY=bin
 all: $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	$(CC) -o $@ -lraylib $^
+	$(CC) -o $@ -lm -lraylib $^
 
 %.o:%.c
 	$(CC) $(CFLAGS) -c -o $@ $^

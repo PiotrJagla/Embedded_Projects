@@ -14,6 +14,7 @@ char* convert_int16_to_str(int16_t i) {
 }
 
 void setup() {
+  pinMode(13, OUTPUT);
   Serial.begin(115200);
   Wire.begin();
   Wire.beginTransmission(MPU_ADDR); // Begins a transmission to the I2C slave (GY-521 board)
@@ -39,18 +40,23 @@ void loop() {
   
   
   
-  //Serial.print("aX = "); Serial.print(convert_int16_to_str(accelerometer_x));
-  //Serial.print(" | aY = "); Serial.print(convert_int16_to_str(accelerometer_y));
-  //Serial.print(" | aZ = "); Serial.print(convert_int16_to_str(accelerometer_z));
-  // the following equation was taken from the documentation [MPU-6000/MPU-6050 Register Map and Description, p.30]
-  //Serial.print(" | tmp = "); Serial.print(temperature/340.00+36.53);
+  if(Serial.available()) {
+    char read_char;
+    read_char = Serial.read();
+    if(read_char = '.') {
+      digitalWrite(13,HIGH);
+      Serial.print("|ax="); Serial.print(accelerometer_x);
+      Serial.print("|ay="); Serial.print(accelerometer_y);
+      Serial.print("|az="); Serial.print(accelerometer_z);
+      
+      Serial.print("|gx="); Serial.print(gyro_x);
+      Serial.print("|gy="); Serial.print(gyro_y);
+      Serial.print("|gz="); Serial.print(gyro_z);
+      digitalWrite(13,LOW);
+    }
+  }
   
-  // Serial.write(gyro_x);
-  // Serial.write(gyro_y);
-  // Serial.write(gyro_z);
-  Serial.print("|x="); Serial.print(gyro_x);
-  Serial.print("|y="); Serial.print(gyro_y);
-  Serial.print("|z="); Serial.print(gyro_z);
+  
   
   
   // Serial.write((int8_t)gyro_x);
@@ -65,5 +71,5 @@ void loop() {
   
   
   // delay
-  delay(20);
+  delay(10);
 }
