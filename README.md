@@ -16,3 +16,9 @@ When game is started the LED to the right lights green, but when i lose LED turn
 Scored points are counted with 2 7-seg displays <br>
 I used freeRTOS is this project to properly multiplex 7-seg displays and dot-matrix <br>
 ![414647398_643927464406667_7967834541922400208_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/3f638a0d-2471-46c0-952e-a13e278808d8)
+
+# Gyroscope measurement virualization
+Gyroscope measurement visualization with MPU6050 inertial measurement unit and atmega328p
+Cube on the screen moves as i move the sensor
+![419163211_1114252446422169_2898686861297516872_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/d194f7e9-7e98-423c-b847-813f9e2887f7)
+![415319191_256152287361427_4004618289510443761_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/11a14a5f-d969-4506-8920-4983f89d0e7e)
