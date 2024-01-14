@@ -145,41 +145,14 @@ int main() {
     printf("___________\n");
     
 
-    if (IsKeyDown(KEY_DOWN)) pitch += 0.6f;
-    else if (IsKeyDown(KEY_UP)) pitch -= 0.6f;
-    else
-    {
-        if (pitch > 0.3f) pitch -= 0.3f;
-        else if (pitch < -0.3f) pitch += 0.3f;
-    }
-
-    // Plane yaw (y-axis) controls
-    if (IsKeyDown(KEY_S)) yaw -= 1.0f;
-    else if (IsKeyDown(KEY_A)) yaw += 1.0f;
-    else
-    {
-        if (yaw > 0.0f) yaw -= 0.5f;
-        else if (yaw < 0.0f) yaw += 0.5f;
-    }
-
-    // Plane roll (z-axis) controls
-    if (IsKeyDown(KEY_LEFT)) roll -= 1.0f;
-    else if (IsKeyDown(KEY_RIGHT)) roll += 1.0f;
-    else
-    {
-        if (roll > 0.0f) roll -= 0.5f;
-        else if (roll < 0.0f) roll += 0.5f;
-    }
 
     acc_x = (int)(((int)acc_x)* 3.9);
     acc_y = (int)(((int)acc_y)* 3.9);
     acc_z = (int)(((int)acc_z)* 3.9);
+
+    pitch = 180.0f * atan((-acc_x)/sqrt(acc_y*acc_y + acc_z*acc_z))/M_PI;
+    roll = 180.0f * atan(acc_y/sqrt(acc_x*acc_x + acc_z*acc_z))/M_PI;
     
-    pitch = 180.0f * atan((float)acc_x/sqrt(acc_y*acc_y + acc_z*acc_z))/M_PI;
-    roll = 180.0f * atan((float)acc_y/sqrt(acc_x*acc_x + acc_z*acc_z))/M_PI;
-
-    yaw = 180.0f * atan((float)acc_z/sqrt(acc_x*acc_x + acc_z*acc_z))/M_PI;
-
 
     //model.transform = MatrixRotateXYZ((Vector3){DEG2RAD*pitch, 0.0f, DEG2RAD*roll});
     model.transform = MatrixRotateXYZ((Vector3){0.0f ,DEG2RAD*pitch, DEG2RAD*roll});
