@@ -11,33 +11,19 @@
 #include <stdbool.h>
 #include <math.h>
 
-//char* substring(char* text, int startI, int endI) {
-//  char* buf = (char*)malloc((endI - startI) * sizeof(char));
-//
-//  for(int i = startI ; i <= endI ; ++i) {
-//    buf[i = startI] = text[startI];
-//  }
-//  return buf;
-//}
-//
-//char** split(char* text, char splitter, int len) {
-//  char** splittedSegments = (char**)malloc(5*sizeof(char*));
-//  int segmentsCount = 0;
-//  int previosSplitterIndex = 0;
-//
-//  for(int i = 0 ; i < len ; ++i){
-//    if(text[i] == splitter) {
-//      splittedSegments[segmentsCount++] = substring(text, previosSplitterIndex, i - 1);
-//      previosSplitterIndex = i;
-//    }
-//  }
-//  return splittedSegments;
-//}
 
 #define TEXT_SIZE 100
 
+struct rect {
+  int x;
+  int y;
+  int width;
+  int height;
+};
+
 
 int main() {
+
   int fileDescriptor;
   char text[TEXT_SIZE];
   struct termios options;
@@ -52,6 +38,8 @@ int main() {
   int len = strlen(text);
   len = write(fileDescriptor, text, len);
   printf("Wrote data: %d\n", len);
+  
+    
 
 
   options.c_cflag = B115200 | CS8 | CLOCAL | CREAD;
@@ -61,6 +49,7 @@ int main() {
 
   tcflush(fileDescriptor, TCIFLUSH);
   tcsetattr(fileDescriptor, TCSANOW, &options);
+  
 
 
   //INIT RAYLIB
@@ -97,14 +86,6 @@ int main() {
 
     memset(text, 0, TEXT_SIZE);
     read(fileDescriptor, text, TEXT_SIZE);
-    gyro_x = text[1] << 8 | text[0];
-    gyro_y = text[3] << 8 | text[2];
-    gyro_z = text[5] << 8 | text[4];
-    //printf("x: %d, y: %d, z: %d\n",gyro_x, gyro_y , gyro_z );
-    //char** gyroData = split(text, '|', 29);
-    //for(int i = 0 ; i < 5 ; ++i) {
-    //  printf("%d segment: %s\n", i, gyroData[i]);
-    //}
     
     printf("received %s\n", text);
     const char delimiter[] = "|";
@@ -112,17 +93,17 @@ int main() {
 
     while(token != (void*)0) {
       printf("Token: %s\n", token); 
+
       //Process token
-      
       int startNumberIndex = 3;
       char strInt[strlen(token) - startNumberIndex];
       for(int i = startNumberIndex; token[i] != '\0' ; ++i) {
         strInt[i-startNumberIndex] = token[i];
       }
+      struct rect r = {5,5,5,5};
 
       int measurement = atoi(strInt);
 
-      //printf("Str in int: %s\n", strInt); 
       printf("int value: %d\n", measurement); 
 
       if(measurement != 0) {
@@ -146,26 +127,20 @@ int main() {
     
 
 
-    acc_x = (int)(((int)acc_x)* 3.9);
-    acc_y = (int)(((int)acc_y)* 3.9);
-    acc_z = (int)(((int)acc_z)* 3.9);
 
     pitch = 180.0f * atan((-acc_x)/sqrt(acc_y*acc_y + acc_z*acc_z))/M_PI;
     roll = 180.0f * atan(acc_y/sqrt(acc_x*acc_x + acc_z*acc_z))/M_PI;
     
 
-    //model.transform = MatrixRotateXYZ((Vector3){DEG2RAD*pitch, 0.0f, DEG2RAD*roll});
-    model.transform = MatrixRotateXYZ((Vector3){0.0f ,DEG2RAD*pitch, DEG2RAD*roll});
-    //model.transform = MatrixRotateXYZ((Vector3){DEG2RAD*gyro_x, DEG2RAD*gyro_y, DEG2RAD*gyro_z});
+    model.transform = MatrixRotateXYZ((Vector3){DEG2RAD*pitch, 0.0f, DEG2RAD*roll});
 
     //RAYLIB DRAWING
     BeginDrawing();
     ClearBackground(BLACK);
     BeginMode3D(camera);
 
-    DrawModel(model, (Vector3){0.0f, -1.0f, 0.0f}, 1.0f, WHITE);
-    DrawModelWires(model, (Vector3){0.0f, -1.0f, 0.0f}, 1.0f, BLACK);
-    //DrawGrid(10, 1.0f);
+    DrawModel(model, (Vector3){0.0f, 1.0f, 0.0f}, 1.0f, WHITE);
+    DrawModelWires(model, (Vector3){0.0f, 1.0f, 0.0f}, 1.0f, BLACK);
 
     EndMode3D();
 

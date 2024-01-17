@@ -24,7 +24,7 @@ void setup() {
 
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x1C); 
-  Wire.write(0x10); 
+  Wire.write(0b00011000); 
   Wire.endTransmission(true);
 
   Wire.beginTransmission(MPU_ADDR);
