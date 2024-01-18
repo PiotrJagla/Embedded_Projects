@@ -12,7 +12,6 @@ CFILES= $(foreach D,$(CODEDIRS), $(wildcard $(D)/*.c))
 OBJECTS= $(patsubst %.c, %.o, $(CFILES))
 DEPFILES= $(patsubst %.c, %.d, $(CFILES))
 
-
 all: $(BINARY)
 
 $(BINARY): $(OBJECTS)

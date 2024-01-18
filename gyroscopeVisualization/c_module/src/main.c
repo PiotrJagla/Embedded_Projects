@@ -28,17 +28,14 @@ int16_t gyro_x;
 int16_t gyro_y;
 int16_t gyro_z;
 
-int16_t acc_x;
-int16_t acc_y;
-int16_t acc_z;
+int16_t acc_x=100;
+int16_t acc_y=100;
+int16_t acc_z=100;
 
 void* dataCollectionRoutine(void* args) {
   int fileDescriptor = (int)args;
   char text[TEXT_SIZE];
   while(true){
-
-
-    usleep(20*1000);
     strcpy(text, ".");
     int len = strlen(text);
     len = write(fileDescriptor, text, len);
@@ -74,6 +71,7 @@ void* dataCollectionRoutine(void* args) {
         }
       }
     }
+    free(segments);
   }
   return NULL;
 }
@@ -119,10 +117,10 @@ int main() {
   float yaw = 0.0f;
 
   while(!WindowShouldClose()) {
+    //printf("X: %d, y:%d, z:%d\n", acc_x, acc_y, acc_z);
     pitch = 180.0f * atan((-acc_x)/sqrt(acc_y*acc_y + acc_z*acc_z))/M_PI;
     roll = 180.0f * atan(acc_y/sqrt(acc_x*acc_x + acc_z*acc_z))/M_PI;
     
-
     model.transform = MatrixRotateXYZ((Vector3){DEG2RAD*pitch, 0.0f, DEG2RAD*roll});
 
     //RAYLIB DRAWING
