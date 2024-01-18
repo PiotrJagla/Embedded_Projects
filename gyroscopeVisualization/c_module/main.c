@@ -21,6 +21,38 @@ struct rect {
   int height;
 };
 
+char* substring(char* text, int start, int end) {
+  char* substr = (char*)malloc((end-start) * sizeof(char));
+
+  for(int i = start; i <= end ; ++i) {
+    substr[i-start] = text[i];
+  }
+
+  return substr;
+}
+
+char** split(char* text, int len, char delimiter) {
+  int prevIndex = (text[0] == delimiter)?1:0;
+  int segmentsNum = 0;
+  char** segments = (char**)malloc(segmentsNum * sizeof(char*));
+
+  
+
+  for(int i = (text[0] == delimiter)?1:0 ; i < len ; ++i) {
+    if(text[i] == delimiter) {
+      segments = (char**)realloc(segments, ++segmentsNum * sizeof(char*));
+      segments[segmentsNum - 1] = substring(text, prevIndex, i-1);
+      prevIndex = i+1;
+    }
+  }
+
+  if(text[len-1] != delimiter) {
+    segments = (char**)realloc(segments, ++segmentsNum * sizeof(char*));
+    segments[segmentsNum - 1] = substring(text, prevIndex, len-1);
+  }
+
+  return segments;
+}
 
 int main() {
 
@@ -85,48 +117,33 @@ int main() {
     usleep(20 * 1000);
 
     memset(text, 0, TEXT_SIZE);
-    read(fileDescriptor, text, TEXT_SIZE);
+    len = read(fileDescriptor, text, TEXT_SIZE);
     
     printf("received %s\n", text);
-    const char delimiter[] = "|";
-    char* token = strtok(text, delimiter);
-
-    while(token != (void*)0) {
-      printf("Token: %s\n", token); 
-
-      //Process token
-      int startNumberIndex = 3;
-      char strInt[strlen(token) - startNumberIndex];
-      for(int i = startNumberIndex; token[i] != '\0' ; ++i) {
-        strInt[i-startNumberIndex] = token[i];
-      }
-      struct rect r = {5,5,5,5};
-
+    char** segments = split(text, strlen(text), '|');
+    int segmentsNumber = sizeof(segments)/sizeof(segments[0]);
+    int numberStartIndex = 3;
+    for(int i = 0 ; i < 6; ++i) {
+      char* strInt = substring(segments[i], numberStartIndex, strlen(segments[i]));
       int measurement = atoi(strInt);
-
-      printf("int value: %d\n", measurement); 
-
+      printf("segment %d: %s, value: %d\n", i+1, segments[i], measurement);
       if(measurement != 0) {
-        if(token[0] == 'g' && token[1] == 'x') {
+        if(segments[i][0] == 'g' && segments[i][1] == 'x') {
           gyro_x = measurement;
-        } else if(token[0] == 'g' && token[1] == 'y') {
+        } else if(segments[i][0] == 'g' && segments[i][1] == 'y') {
           gyro_y = measurement;
-        } else if(token[0] == 'g' && token[1] == 'z') {
+        } else if(segments[i][0] == 'g' && segments[i][1] == 'z') {
           gyro_z = measurement;
-        } else if(token[0] == 'a' && token[1] == 'x') {
+        } else if(segments[i][0] == 'a' && segments[i][1] == 'x') {
           acc_x = measurement;
-        } else if(token[0] == 'a' && token[1] == 'y') {
+        } else if(segments[i][0] == 'a' && segments[i][1] == 'y') {
           acc_y = measurement;
-        } else if(token[0] == 'a' && token[1] == 'z') {
+        } else if(segments[i][0] == 'a' && segments[i][1] == 'z') {
           acc_z = measurement;
         }
       }
-      token = strtok((void*)0, delimiter);
     }
     printf("___________\n");
-    
-
-
 
     pitch = 180.0f * atan((-acc_x)/sqrt(acc_y*acc_y + acc_z*acc_z))/M_PI;
     roll = 180.0f * atan(acc_y/sqrt(acc_x*acc_x + acc_z*acc_z))/M_PI;

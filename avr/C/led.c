@@ -7,17 +7,19 @@
 
 
 int main(void) {
-    initUSART();
+  initUSART();
 
-    DDRB |= (1<<DDB5);
 
-    while(1){
-      transmitMessage("Hello\n\r");
+  DDRB |= (1<<DDB5);
 
-      PORTB |= (1<<DDB5);
-      _delay_ms(500);
 
-      PORTB &= ~(1<<DDB5);
-      _delay_ms(500);
-    }
+  while(1){
+    transmitMessage("Hello\n\r");
+
+    PORTB |= (1<<DDB5);
+    _delay_ms(500);
+
+    PORTB &= ~(1<<DDB5);
+    _delay_ms(500);
+  }
 }

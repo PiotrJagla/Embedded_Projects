@@ -9,10 +9,10 @@ BINARY=bin
 all: $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	$(CC) -o $@ -lm -lraylib $^
+	$(CC) -o $@ -lm -g -lraylib $^
 
 %.o:%.c
-	$(CC) $(CFLAGS) -c -o $@ $^
+	$(CC) $(CFLAGS)  -c -o $@ $^
 
 clean:
 	rm -rf $(BINARY) *.o	
