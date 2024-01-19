@@ -16,21 +16,13 @@
 #define SEGMENTS_NUMBER 6
 #define TEXT_SIZE 100
 
-struct rect {
-  int x;
-  int y;
-  int width;
-  int height;
-};
-
-
 int16_t gyro_x;
 int16_t gyro_y;
 int16_t gyro_z;
 
-int16_t acc_x=100;
-int16_t acc_y=100;
-int16_t acc_z=100;
+int16_t acc_x;
+int16_t acc_y;
+int16_t acc_z;
 
 void* dataCollectionRoutine(void* args) {
   int fileDescriptor = (int)args;
@@ -70,6 +62,9 @@ void* dataCollectionRoutine(void* args) {
           acc_z = measurement;
         }
       }
+    }
+    for(int i = 0 ; segments[i] != NULL; ++i) {
+      free(segments[i]);
     }
     free(segments);
   }
