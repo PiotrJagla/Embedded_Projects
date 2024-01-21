@@ -1,7 +1,6 @@
 #include "ADC_Utils.h"
 #include <avr/io.h>
 
-
 int ADCread(int adctouse) {
   int ADCval;
 

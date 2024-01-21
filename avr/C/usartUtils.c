@@ -6,7 +6,6 @@
 #define BAUD_RATE 115200UL
 #define BAUD ((F_CPU)/(BAUD_RATE*8UL)-1)
 
-
 void initUSART(void) {  
   UBRR0H = (BAUD>>8);  
   UBRR0L = BAUD;       
@@ -28,3 +27,5 @@ void transmitMessage(char* message) {
     USART_transmit(message[i]);
   }
 }
+
+
