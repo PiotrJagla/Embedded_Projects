@@ -56,23 +56,16 @@ Reset:
 
 				ldi temp, 0b00000011
 				out PortB, temp
-				ldi temp, 0b00000000
+				ldi temp, 0b11111110
 				out PortD, temp
-
-				ldi numBuf, 0b00000001
 
 
 Main:
-				in input, PinB
-				sbrs input, 0
-				inc numBuf
-
-				sbrs input, 1
-				dec numBuf
-
+				;in input, PinB
+				;out PortD, input
+				mov numBuf, r4
+				
 				rcall Light
-
-				rcall Delay
 				rcall Main
 
 Light:
