@@ -49,24 +49,27 @@ Reset:
 				clr temp
 				out TCNT0, temp
 
-				sbi DDRB, 0
 				ldi temp, 0b11111110
 				out DDRD, temp 
 				ldi temp, 0b00100000
 				out DDRB, temp
-				ldi temp, 0b00000011
+
+				ldi temp, 0b00100011
+				out PortB, temp
+				ldi temp, 0b11111110
 				out PortD, temp
 
 
 Main:
 				in input, PinB
-				cpi input, 3
-				brne PC+2
-				sbrs input , PB0
-				inc numBuf
+				;out PortD, r2
+				cpi input, 0
+				;brne PC+2
+				;inc numBuf
 
-				sbrs input , PB1
-				dec numBuf
+				;cpi input, 1
+				;sbrs input , PB1
+				;dec numBuf
 				
 				rcall Light
 				rcall Main
