@@ -40,7 +40,7 @@ Reset:
 
 				ldi numBuf, 0b000000000
 
-				ldi temp, 0b00000101
+				ldi temp, 0b00000010
 				out TCCR0B, temp
 
 				ldi temp, 0b00000001
@@ -72,7 +72,6 @@ Main:
 
 				sbrs input, 1
 				rcall Decrement
-
 
 
 				ldi temp, 0b00000001
