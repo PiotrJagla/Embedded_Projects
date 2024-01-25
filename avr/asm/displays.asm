@@ -7,6 +7,8 @@
 .def		overflows = r17
 .def		numBuf = r18
 .def		input = r19
+.def		buttonLock = r20
+
 
 .org 0x0000
 rjmp Reset
@@ -60,20 +62,59 @@ Reset:
 				out PortD, temp
 
 				ldi numBuf, 0b00000001
+				ldi buttonLock, 0b00000011
 
 
 Main:
 				in input, PinB
 				sbrs input, 0
-				inc numBuf
+				rcall Increment
 
 				sbrs input, 1
-				dec numBuf
+				rcall Decrement
+
+
+
+				ldi temp, 0b00000001
+				AND temp, input
+				cpi temp, 1
+				brne PC+3
+				ldi temp, 0b00000001
+				OR buttonLock, temp
+
+				ldi temp, 0b00000010
+				AND temp, input
+				cpi temp, 2
+				brne PC + 3
+				ldi temp, 0b00000010
+				OR buttonLock, temp
 
 				rcall Light
 
 				rcall Delay
 				rcall Main
+
+Increment:
+				ldi temp, 0b00000001
+				AND temp, buttonLock
+				cpi temp, 1
+				brne PC+4
+				inc numBuf
+				ldi temp, 0b11111110
+				AND buttonLock, temp
+
+				ret
+
+Decrement:
+				ldi temp, 0b00000010
+				AND temp, buttonLock
+				cpi temp, 2
+				brne PC+4
+				dec numBuf
+				ldi temp, 0b11111101
+				AND buttonLock, temp
+
+				ret
 
 Light:
 				cpi numBuf, 10
