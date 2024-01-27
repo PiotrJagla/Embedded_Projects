@@ -17,7 +17,6 @@ struct rect** tilemap;
 struct rect player;
 
 
-
 void initGame() {
   InitWindow(windowWidth,windowHeight, "basic window");
   player = (struct rect){6*gridSize,6*gridSize,50,50,GREEN};
@@ -61,14 +60,10 @@ void updateGame() {
           //left wall
           if(tile.x < player.x + player.width) {
             player.x = tile.x - player.width;
-
           }
-
         }
-
       }
     }
-
 }
 
 
