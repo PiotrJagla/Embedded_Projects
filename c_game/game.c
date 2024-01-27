@@ -31,11 +31,6 @@ void initGame() {
 
   for(int y = 0 ; y < tilemapHeight ; ++y) {
     for(int x = 0 ; x < tilemapHeight ; ++x) {
-      // tilemap[y][x].x = x*gridSize;
-      // tilemap[y][x].y = y*gridSize;
-      // tilemap[y][x].width = gridSize;
-      // tilemap[y][x].height= gridSize;
-      // tilemap[y][x].c= BLACK;
       tilemap[y][x] = (struct rect){x*gridSize, y*gridSize, gridSize, gridSize, BLACK};
     }
 
