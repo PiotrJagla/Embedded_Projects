@@ -27,6 +27,9 @@
 /* USER CODE BEGIN Includes */
 #include "motors_driver.h"
 #include "tim.h"
+#include "adc.h"
+#include "usart.h"
+#include "string.h"
 
 /* USER CODE END Includes */
 
@@ -37,6 +40,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define adc_x 0
+#define adc_y 1
+#define adc_buf_size 2
 
 /* USER CODE END PD */
 
@@ -47,7 +53,11 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+
 enum StepperMotorState stepperMotorState;
+uint8_t adc_buf[2];
+
+
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -81,6 +91,7 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
+    HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, adc_buf_size);
 
   /* USER CODE END Init */
 
@@ -129,13 +140,50 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN StartDefaultTask */
 		stepperMotorState = STOPPED;
     disableStepperMotor();
+		char msg[30];
+		uint8_t xVal;
+		uint8_t yVal;
+		uint8_t dutyCycle = 75;
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   /* Infinite loop */
 	while(1)
   {
-		htim2.Instance->CCR1 = 75;
-		osDelay(3000);
+		xVal = adc_buf[adc_x];
+		yVal = adc_buf[adc_y];
+		if(yVal < 10) {
+			stepperMotorState = TURNING_LEFT;
+		} else if(yVal > 240) {
+			stepperMotorState = TURNING_RIGHT;
+		} else {
+			stepperMotorState = STOPPED;
+			disableStepperMotor();
+		}
 
+		if(xVal < 10) {
+			dutyCycle++;
+			if(dutyCycle >= 100) {
+				dutyCycle = 100;
+			}
+		} else if(xVal > 240) {
+			dutyCycle--;
+			if(dutyCycle <= 60) {
+				dutyCycle = 60;
+			}
+		}
+
+		htim2.Instance->CCR1 = (uint32_t)dutyCycle;
+
+		//sprintf(msg, "X: %d, Y: %d, D: %d\r\n", adc_buf[adc_x], adc_buf[adc_y], (uint8_t)dutyCycle);
+		//HAL_UART_Transmit(&huart2, msg, strlen(msg), HAL_MAX_DELAY);
+
+		osDelay(30);
+
+
+		//htim2.Instance->CCR1 = 75;
+		//osDelay(1000);
+
+		//htim2.Instance->CCR1 = 25;
+		//osDelay(3000);
 
   }
   /* USER CODE END StartDefaultTask */
