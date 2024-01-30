@@ -22,3 +22,8 @@ Gyroscope measurement visualization with MPU6050 inertial measurement unit and a
 Cube on the screen moves as i move the sensor
 ![419163211_1114252446422169_2898686861297516872_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/d194f7e9-7e98-423c-b847-813f9e2887f7)
 ![415319191_256152287361427_4004618289510443761_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/11a14a5f-d969-4506-8920-4983f89d0e7e)
+
+#Robotic arm
+Robotic arm made witm stm32, joystick, stepper motor and servo motor.
+I can control the arm with joystick.
+![422394538_752963699719572_5950044503444723365_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/a7f003c8-ad14-4749-bcb9-77ebe9ba5aad)
