@@ -144,7 +144,9 @@ void StartDefaultTask(void *argument)
 		uint8_t xVal;
 		uint8_t yVal;
 		uint8_t dutyCycle = 75;
+		uint8_t grapper = 90;
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
   /* Infinite loop */
 	while(1)
   {
@@ -166,12 +168,18 @@ void StartDefaultTask(void *argument)
 			}
 		} else if(xVal > 240) {
 			dutyCycle--;
-			if(dutyCycle <= 60) {
-				dutyCycle = 60;
+			if(dutyCycle <= 70) {
+				dutyCycle = 70;
 			}
 		}
 
 		htim2.Instance->CCR1 = (uint32_t)dutyCycle;
+		if(grapper == 90) {
+			grapper = 90;
+		} else {
+			grapper = 90;
+		}
+		htim2.Instance->CCR2 = grapper;
 
 		//sprintf(msg, "X: %d, Y: %d, D: %d\r\n", adc_buf[adc_x], adc_buf[adc_y], (uint8_t)dutyCycle);
 		//HAL_UART_Transmit(&huart2, msg, strlen(msg), HAL_MAX_DELAY);
