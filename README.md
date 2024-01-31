@@ -23,7 +23,8 @@ Cube on the screen moves as i move the sensor
 ![419163211_1114252446422169_2898686861297516872_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/d194f7e9-7e98-423c-b847-813f9e2887f7)
 ![415319191_256152287361427_4004618289510443761_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/11a14a5f-d969-4506-8920-4983f89d0e7e)
 
-#Robotic arm
-Robotic arm made witm stm32, joystick, stepper motor and servo motor.
-I can control the arm with joystick.
-![422394538_752963699719572_5950044503444723365_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/a7f003c8-ad14-4749-bcb9-77ebe9ba5aad)
+#Robotic arm with gripper
+Robotic arm made witm stm32-F302R8. <br>
+I can control the arm with joystick and the gripper with two button in the background.<br>
+This arm consists of one stepper motor to turn around, one servo motor to turn up and down and another servo for gripper.<br>
+![421289240_1775808462916178_1839222255133160598_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/7306012e-2b5f-4fa7-ba2d-20f658d4e757)
