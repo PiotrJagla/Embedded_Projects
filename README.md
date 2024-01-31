@@ -16,11 +16,12 @@ Robotic arm made witm stm32-F302R8. <br>
 I can control the arm with joystick and the gripper with two button in the background.<br>
 This arm consists of one stepper motor to turn around, one servo motor to turn up and down and another servo for gripper.<br>
 <img src="https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/7306012e-2b5f-4fa7-ba2d-20f658d4e757" width="500" height="600" />
-![421289240_1775808462916178_1839222255133160598_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/7306012e-2b5f-4fa7-ba2d-20f658d4e757)
 
 # Gyroscope measurement virualization
 Gyroscope measurement visualization with MPU6050 inertial measurement unit and atmega328p
 Cube on the screen moves as i move the sensor
+<img src="https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/d194f7e9-7e98-423c-b847-813f9e2887f7" width="500" height="600" />
+<img src="https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/11a14a5f-d969-4506-8920-4983f89d0e7e" width="500" height="600" />
 ![419163211_1114252446422169_2898686861297516872_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/d194f7e9-7e98-423c-b847-813f9e2887f7)
 ![415319191_256152287361427_4004618289510443761_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/11a14a5f-d969-4506-8920-4983f89d0e7e)
 
