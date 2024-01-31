@@ -7,7 +7,7 @@ I can also control the snake speed with potentiometer <br>
 When game is started the LED to the right lights green, but when i lose LED turns red. There is also short blink of blue light when i collect a dot <br>
 Scored points are counted with 2 7-seg displays <br>
 I used freeRTOS is this project to properly multiplex 7-seg displays and dot-matrix <br>
-<img src="https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/3f638a0d-2471-46c0-952e-a13e278808d8" width="400" height="400" />
+<img src="https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/3f638a0d-2471-46c0-952e-a13e278808d8" width="500" height="600" />
 ![414647398_643927464406667_7967834541922400208_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/3f638a0d-2471-46c0-952e-a13e278808d8)
 
 
