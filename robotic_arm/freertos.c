@@ -73,6 +73,13 @@ const osThreadAttr_t stepperMotor_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
+/* Definitions for GrapperTask */
+osThreadId_t GrapperTaskHandle;
+const osThreadAttr_t GrapperTask_attributes = {
+  .name = "GrapperTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -81,6 +88,7 @@ const osThreadAttr_t stepperMotor_attributes = {
 
 void StartDefaultTask(void *argument);
 void StepperMotorTask(void *argument);
+void GrapperTaskFunc(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -92,6 +100,8 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
     HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, adc_buf_size);
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
 
   /* USER CODE END Init */
 
@@ -118,6 +128,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of stepperMotor */
   stepperMotorHandle = osThreadNew(StepperMotorTask, NULL, &stepperMotor_attributes);
 
+  /* creation of GrapperTask */
+  GrapperTaskHandle = osThreadNew(GrapperTaskFunc, NULL, &GrapperTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -143,10 +156,9 @@ void StartDefaultTask(void *argument)
 		char msg[30];
 		uint8_t xVal;
 		uint8_t yVal;
-		uint8_t dutyCycle = 75;
-		uint8_t grapper = 90;
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+		uint8_t dutyCycle = 70;
+		uint8_t maxDutyCycle = 100;
+		uint8_t minDutyCycle = 70;
   /* Infinite loop */
 	while(1)
   {
@@ -163,36 +175,18 @@ void StartDefaultTask(void *argument)
 
 		if(xVal < 10) {
 			dutyCycle++;
-			if(dutyCycle >= 100) {
-				dutyCycle = 100;
+			if(dutyCycle >= maxDutyCycle) {
+				dutyCycle = maxDutyCycle;
 			}
 		} else if(xVal > 240) {
 			dutyCycle--;
-			if(dutyCycle <= 70) {
-				dutyCycle = 70;
+			if(dutyCycle <= minDutyCycle) {
+				dutyCycle = minDutyCycle;
 			}
 		}
 
-		htim2.Instance->CCR1 = (uint32_t)dutyCycle;
-		if(grapper == 90) {
-			grapper = 90;
-		} else {
-			grapper = 90;
-		}
-		htim2.Instance->CCR2 = grapper;
-
-		//sprintf(msg, "X: %d, Y: %d, D: %d\r\n", adc_buf[adc_x], adc_buf[adc_y], (uint8_t)dutyCycle);
-		//HAL_UART_Transmit(&huart2, msg, strlen(msg), HAL_MAX_DELAY);
-
+		htim2.Instance->CCR1 = dutyCycle;
 		osDelay(30);
-
-
-		//htim2.Instance->CCR1 = 75;
-		//osDelay(1000);
-
-		//htim2.Instance->CCR1 = 25;
-		//osDelay(3000);
-
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -225,6 +219,43 @@ void StepperMotorTask(void *argument)
 		}
   }
   /* USER CODE END StepperMotorTask */
+}
+
+/* USER CODE BEGIN Header_GrapperTaskFunc */
+/**
+* @brief Function implementing the GrapperTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_GrapperTaskFunc */
+void GrapperTaskFunc(void *argument)
+{
+  /* USER CODE BEGIN GrapperTaskFunc */
+	uint8_t grapperDutyCycle = 70;
+	uint8_t maxGrapperDutyCycle = 100;
+	uint8_t minGrapperDutyCycle = 70;
+
+  /* Infinite loop */
+	while(1)
+  {
+		GPIO_PinState button1State = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14);
+		GPIO_PinState button2State = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15);
+		if(button1State == GPIO_PIN_RESET) {
+			grapperDutyCycle += 2;
+			if(grapperDutyCycle >= maxGrapperDutyCycle) {
+				grapperDutyCycle = maxGrapperDutyCycle;
+			}
+		} else if(button2State == GPIO_PIN_RESET) {
+			grapperDutyCycle -= 2;
+			if(grapperDutyCycle <= minGrapperDutyCycle) {
+				grapperDutyCycle = minGrapperDutyCycle;
+			}
+		}
+
+		htim2.Instance->CCR2 = grapperDutyCycle;
+    osDelay(100);
+  }
+  /* USER CODE END GrapperTaskFunc */
 }
 
 /* Private application code --------------------------------------------------*/
