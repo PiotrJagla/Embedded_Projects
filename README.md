@@ -8,13 +8,14 @@ When game is started the LED to the right lights green, but when i lose LED turn
 Scored points are counted with 2 7-seg displays <br>
 I used freeRTOS is this project to properly multiplex 7-seg displays and dot-matrix <br>
 <img src="https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/3f638a0d-2471-46c0-952e-a13e278808d8" width="500" height="600" />
-![414647398_643927464406667_7967834541922400208_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/3f638a0d-2471-46c0-952e-a13e278808d8)
+
 
 
 # Robotic arm with gripper
 Robotic arm made witm stm32-F302R8. <br>
 I can control the arm with joystick and the gripper with two button in the background.<br>
 This arm consists of one stepper motor to turn around, one servo motor to turn up and down and another servo for gripper.<br>
+<img src="https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/7306012e-2b5f-4fa7-ba2d-20f658d4e757" width="500" height="600" />
 ![421289240_1775808462916178_1839222255133160598_n](https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/7306012e-2b5f-4fa7-ba2d-20f658d4e757)
 
 # Gyroscope measurement virualization
