@@ -9,8 +9,6 @@ Scored points are counted with 2 7-seg displays <br>
 I used freeRTOS is this project to properly multiplex 7-seg displays and dot-matrix <br>
 <img src="https://github.com/PiotrJagla/EmbeddedDemoProjects/assets/76881722/3f638a0d-2471-46c0-952e-a13e278808d8" width="500" height="600" />
 
-
-
 # Robotic arm with gripper
 Robotic arm made witm stm32-F302R8. <br>
 I can control the arm with joystick and the gripper with two button in the background.<br>
