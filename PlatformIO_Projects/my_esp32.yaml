@@ -1,0 +1,42 @@
+esphome:
+  name: esp32-demo
+  friendly_name: ESP32 demo
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "e57rhcD3AbjjQLfPX/6CK0i+vrOfnLVek7yYigqVU7E="
+
+ota:
+  - platform: esphome
+    password: "a79f75d95666583510fe38de94a075f1"
+
+wifi:
+  ssid: "Orange_Swiatlowod_63C0"
+  password: "5ZNZ5EKX76LG"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32-Demo Fallback Hotspot"
+    password: "0pYhD0Bs64Nn"
+
+captive_portal:
+
+output:
+  - platform: gpio
+    pin: GPIO32
+    id: led_output
+
+light:
+  - platform: binary
+    name: "ESP32 LED"
+    output: led_output
+
