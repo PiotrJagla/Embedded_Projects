@@ -1,95 +1,105 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <Wire.h>
+
+#define HDC1080_ADDR 0x40
+#define TEMP_REG     0x00
+#define HUMID_REG    0x01
 
 const char* ssid = "ssid";
 const char* password = "password";
 
-const char* mqtt_server = "192.168.1.42";  // Replace with your Home Assistant IP
-const char* mqtt_user = "mqtt_user";        // Optional
-const char* mqtt_pass = "mqtt_password";    // Optional
+const char* mqtt_server = "192.168.1.42";
+const char* mqtt_user = "mqtt_user";
+const char* mqtt_pass = "mqtt_password";
+
+const char* temp_topic = "home/esp32/hdc1080/temperature";
+const char* hum_topic  = "home/esp32/hdc1080/humidity";
+const char* temp_config_topic = "homeassistant/sensor/esp32_temp/config";
+const char* hum_config_topic  = "homeassistant/sensor/esp32_hum/config";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-const int ledPin = 2;
-
-const char* state_topic = "home/esp32/led";
-const char* command_topic = "home/esp32/led/set";
-const char* discovery_topic = "homeassistant/light/esp32_led/config";
-
 void publishDiscoveryConfig() {
-  String payload = 
-    "{\"name\": \"ESP32 LED\","
-    "\"command_topic\": \"home/esp32/led/set\","
-    "\"state_topic\": \"home/esp32/led\","
-    "\"payload_on\": \"ON\","
-    "\"payload_off\": \"OFF\","
-    "\"unique_id\": \"esp32_led_01\","
-    "\"device\": {"
-      "\"identifiers\": [\"esp32_led_board\"],"
-      "\"name\": \"ESP32 Board\","
-      "\"model\": \"ESP32-DevKit\","
-      "\"manufacturer\": \"DIY\""
-    "}"
-    "}";
-    
-  client.publish(discovery_topic, payload.c_str(), true); // retain = true
+  String tempConfig = 
+    "{\"name\": \"ESP32 Temperature\","
+    "\"state_topic\": \"" + String(temp_topic) + "\","
+    "\"unit_of_measurement\": \"°C\","
+    "\"device_class\": \"temperature\","
+    "\"value_template\": \"{{ value }}\","
+    "\"unique_id\": \"esp32_temp\"}";
+
+  String humConfig = 
+    "{\"name\": \"ESP32 Humidity\","
+    "\"state_topic\": \"" + String(hum_topic) + "\","
+    "\"unit_of_measurement\": \"%\","
+    "\"device_class\": \"humidity\","
+    "\"value_template\": \"{{ value }}\","
+    "\"unique_id\": \"esp32_hum\"}";
+
+  client.publish(temp_config_topic, tempConfig.c_str(), true);
+  client.publish(hum_config_topic, humConfig.c_str(), true);
 }
 
-void callback(char* topic, byte* payload, unsigned int length) {
-  String message;
-  for (unsigned int i = 0; i < length; i++) {
-    message += (char)payload[i];
-  }
-
-  Serial.printf("Message arrived [%s]: %s\n", topic, message.c_str());
-
-  if (String(topic) == command_topic) {
-    if (message == "ON") {
-      digitalWrite(ledPin, HIGH);
-      client.publish(state_topic, "ON", true);
-    } else {
-      digitalWrite(ledPin, LOW);
-      client.publish(state_topic, "OFF", true);
-    }
-  }
+void setup_wifi() {
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) delay(500);
 }
 
 void reconnect() {
   while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
     if (client.connect("ESP32Client", mqtt_user, mqtt_pass)) {
-      Serial.println("connected");
-
-      client.subscribe(command_topic);
-      publishDiscoveryConfig();
+      // publishDiscoveryConfig();
     } else {
-      Serial.print("failed, rc=");
-      Serial.println(client.state());
       delay(5000);
     }
   }
 }
 
-void setup() {
-  pinMode(ledPin, OUTPUT);
-  Serial.begin(115200);
+float readTemperature() {
+  Wire.beginTransmission(HDC1080_ADDR);
+  Wire.write(TEMP_REG);
+  Wire.endTransmission();
+  delay(20);  // Wait for measurement
 
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("\nWiFi connected");
+  Wire.requestFrom(HDC1080_ADDR, 2);
+  uint16_t raw = (Wire.read() << 8) | Wire.read();
+  return (raw / 65536.0) * 165.0 - 40.0;
+}
+
+float readHumidity() {
+  Wire.beginTransmission(HDC1080_ADDR);
+  Wire.write(HUMID_REG);
+  Wire.endTransmission();
+  delay(20);
+
+  Wire.requestFrom(HDC1080_ADDR, 2);
+  uint16_t raw = (Wire.read() << 8) | Wire.read();
+  return (raw / 65536.0) * 100.0;
+}
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(21, 22); 
+  setup_wifi();
 
   client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);
 }
 
 void loop() {
-  if (!client.connected()) {
-    reconnect();
-  }
+  if (!client.connected()) reconnect();
   client.loop();
+
+  float temperature = readTemperature();
+  float humidity = readHumidity();
+
+  char tempStr[10], humStr[10];
+  dtostrf(temperature, 4, 2, tempStr);
+  dtostrf(humidity, 4, 2, humStr);
+
+  client.publish(temp_topic, tempStr, true);
+  client.publish(hum_topic, humStr, true);
+
+  delay(30000);
 }
