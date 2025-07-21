@@ -23,16 +23,16 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
 #define I2S_SD        23
 
 // FFT setup
-const int SAMPLES = 512;
-const double SAMPLING_FREQUENCY = 16000;
+const int SAMPLES = 1024;
+const double SAMPLING_FREQUENCY = 44100;
 double vReal[SAMPLES];
 double vImag[SAMPLES];
-ArduinoFFT<double> FFT = ArduinoFFT<double>(vReal, vImag, SAMPLES, SAMPLING_FREQUENCY);  // 16kHz sample rate
+ArduinoFFT<double> FFT = ArduinoFFT<double>(vReal, vImag, SAMPLES, SAMPLING_FREQUENCY); 
 
 void setupI2S() {
   const i2s_config_t i2s_config = {
     .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
-    .sample_rate = 16000,
+    .sample_rate = SAMPLING_FREQUENCY,
     .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,
     .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
     .communication_format = I2S_COMM_FORMAT_I2S,
@@ -99,7 +99,7 @@ void loop() {
   }
 
   // Perform FFT
-  FFT.windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+  FFT.windowing(FFT_WIN_TYP_BLACKMAN, FFT_FORWARD);
   FFT.compute(FFT_FORWARD);
   FFT.complexToMagnitude();
 
@@ -113,8 +113,21 @@ void loop() {
     }
   }
 
-  double frequency = (maxIndex * 16000.0) / SAMPLES;
+  double frequency;
+  if (maxIndex > 0 && maxIndex < (SAMPLES / 2 - 1)) {
+    double alpha = vReal[maxIndex - 1];
+    double beta = vReal[maxIndex];
+    double gamma = vReal[maxIndex + 1];
+
+    double p = 0.5 * (alpha - gamma) / (alpha - 2 * beta + gamma);
+    frequency = ((maxIndex + p) * SAMPLING_FREQUENCY) / SAMPLES;
+  }
   String note = frequencyToNote(frequency);
+
+  if (maxVal < 1000) {
+    frequency = 0;
+    note = "-";
+  }
 
   // Display result
   display.clearDisplay();
