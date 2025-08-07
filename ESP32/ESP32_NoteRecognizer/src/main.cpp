@@ -23,11 +23,12 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
 #define I2S_SD        23
 
 // FFT setup
-const int SAMPLES = 1024;
-const double SAMPLING_FREQUENCY = 44100;
-double vReal[SAMPLES];
-double vImag[SAMPLES];
-ArduinoFFT<double> FFT = ArduinoFFT<double>(vReal, vImag, SAMPLES, SAMPLING_FREQUENCY); 
+const int SAMPLES = 2048;
+const double SAMPLING_FREQUENCY = 11025;
+float vReal[SAMPLES];
+float vImag[SAMPLES];
+int32_t samples[SAMPLES];
+ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, SAMPLES, SAMPLING_FREQUENCY); 
 
 void setupI2S() {
   const i2s_config_t i2s_config = {
@@ -85,7 +86,6 @@ String frequencyToNote(float freq) {
 }
 
 void loop() {
-  int32_t samples[SAMPLES];
   size_t bytes_read;
 
   // Read I2S samples
@@ -94,7 +94,8 @@ void loop() {
 
   // Convert to float and center around 0
   for (int i = 0; i < sampleCount; i++) {
-    vReal[i] = (double)(samples[i] >> 8);  // 24-bit to 16-bit
+    // vReal[i] = (double)(samples[i] >> 8);  // Convert 24-bit to 16-bit-ish
+    vReal[i] = (float)(samples[i] >> 8);  // Convert 24-bit to 16-bit-ish
     vImag[i] = 0;
   }
 
@@ -113,15 +114,7 @@ void loop() {
     }
   }
 
-  double frequency;
-  if (maxIndex > 0 && maxIndex < (SAMPLES / 2 - 1)) {
-    double alpha = vReal[maxIndex - 1];
-    double beta = vReal[maxIndex];
-    double gamma = vReal[maxIndex + 1];
-
-    double p = 0.5 * (alpha - gamma) / (alpha - 2 * beta + gamma);
-    frequency = ((maxIndex + p) * SAMPLING_FREQUENCY) / SAMPLES;
-  }
+  double frequency = (maxIndex * SAMPLING_FREQUENCY) / SAMPLES;
   String note = frequencyToNote(frequency);
 
   if (maxVal < 1000) {
@@ -129,18 +122,34 @@ void loop() {
     note = "-";
   }
 
-  // Display result
+  // === OLED DISPLAY ===
   display.clearDisplay();
-  display.setTextSize(2);
-  display.setTextColor(SSD1306_WHITE);
+
+  // --- Display waveform ---
+  int prevY = SCREEN_HEIGHT / 2;
+  for (int x = 0; x < SCREEN_WIDTH; x++) {
+    int i = map(x, 0, SCREEN_WIDTH, 0, sampleCount - 1);
+    // Scale and center the sample to OLED height
+    int y = map(vReal[i], -20000, 20000, SCREEN_HEIGHT, 0);  // Adjust range as needed
+    y = constrain(y, 0, SCREEN_HEIGHT - 1);
+    display.drawLine(x - 1, prevY, x, y, SSD1306_WHITE);
+    prevY = y;
+  }
+
+  // --- Display detected note ---
+  display.setTextSize(1);
   display.setCursor(0, 0);
-  display.print("Note:");
-  display.setCursor(0, 30);
-  display.setTextSize(3);
+  display.print("Note: ");
   display.print(note);
+  display.setCursor(0, 10);
+  display.printf("Freq: %.1f Hz", frequency);
+
   display.display();
 
+  // Debug output
   Serial.printf("Freq: %.2f Hz, Note: %s\n", frequency, note.c_str());
 
-  delay(100);
+  // delay(20);
 }
+
+
