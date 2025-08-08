@@ -3,7 +3,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-// OLED
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_MOSI   19
@@ -16,13 +15,11 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
                          OLED_MOSI, OLED_CLK, OLED_DC,
                          OLED_RESET, OLED_CS);
 
-// I2S mic (SPH0645)
 #define I2S_NUM       I2S_NUM_0
 #define I2S_WS        25
 #define I2S_SCK       26
 #define I2S_SD        23
 
-// FFT setup
 const int SAMPLES = 2048;
 const double SAMPLING_FREQUENCY = 11025;
 float vReal[SAMPLES];
@@ -61,7 +58,6 @@ void setup() {
   Serial.begin(115200);
   setupI2S();
 
-  // OLED setup
   if (!display.begin(SSD1306_SWITCHCAPVCC)) {
     Serial.println("SSD1306 failed");
     while (true);
@@ -70,7 +66,6 @@ void setup() {
   display.display();
 }
 
-// Convert frequency to note string
 String frequencyToNote(float freq) {
   const char* noteNames[] = {
     "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
@@ -88,23 +83,30 @@ String frequencyToNote(float freq) {
 void loop() {
   size_t bytes_read;
 
-  // Read I2S samples
   i2s_read(I2S_NUM, &samples, sizeof(samples), &bytes_read, portMAX_DELAY);
   int sampleCount = bytes_read / sizeof(int32_t);
 
-  // Convert to float and center around 0
   for (int i = 0; i < sampleCount; i++) {
-    // vReal[i] = (double)(samples[i] >> 8);  // Convert 24-bit to 16-bit-ish
-    vReal[i] = (float)(samples[i] >> 8);  // Convert 24-bit to 16-bit-ish
-    vImag[i] = 0;
+    int32_t raw = samples[i];
+    raw >>= 8;
+    vReal[i] = (float)raw;
+    vImag[i] = 0.0f;
   }
 
-  // Perform FFT
+  float mean = 0;
+  for (int i = 0; i < sampleCount; i++) {
+    mean += vReal[i];
+  }
+  mean /= sampleCount;
+
+  for (int i = 0; i < sampleCount; i++) {
+    vReal[i] -= mean;
+  }
+
   FFT.windowing(FFT_WIN_TYP_BLACKMAN, FFT_FORWARD);
   FFT.compute(FFT_FORWARD);
   FFT.complexToMagnitude();
 
-  // Find peak frequency
   double maxVal = 0;
   int maxIndex = 0;
   for (int i = 1; i < SAMPLES / 2; i++) {
@@ -117,37 +119,17 @@ void loop() {
   double frequency = (maxIndex * SAMPLING_FREQUENCY) / SAMPLES;
   String note = frequencyToNote(frequency);
 
-  if (maxVal < 1000) {
-    frequency = 0;
-    note = "-";
-  }
-
-  // === OLED DISPLAY ===
   display.clearDisplay();
-
-  // --- Display waveform ---
-  int prevY = SCREEN_HEIGHT / 2;
-  for (int x = 0; x < SCREEN_WIDTH; x++) {
-    int i = map(x, 0, SCREEN_WIDTH, 0, sampleCount - 1);
-    // Scale and center the sample to OLED height
-    int y = map(vReal[i], -20000, 20000, SCREEN_HEIGHT, 0);  // Adjust range as needed
-    y = constrain(y, 0, SCREEN_HEIGHT - 1);
-    display.drawLine(x - 1, prevY, x, y, SSD1306_WHITE);
-    prevY = y;
-  }
-
-  // --- Display detected note ---
-  display.setTextSize(1);
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
-  display.print("Note: ");
+  display.print("Note:");
+  display.setCursor(0, 30);
+  display.setTextSize(3);
   display.print(note);
-  display.setCursor(0, 10);
-  display.printf("Freq: %.1f Hz", frequency);
-
   display.display();
 
-  // Debug output
-  Serial.printf("Freq: %.2f Hz, Note: %s\n", frequency, note.c_str());
+  // Serial.printf("Freq: %.2f Hz, Note: %s\n", frequency, note.c_str());
 
   // delay(20);
 }
