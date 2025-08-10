@@ -2,6 +2,8 @@
 #include <arduinoFFT.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "driver/adc.h"
+#include "esp_adc_cal.h"
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -10,6 +12,10 @@
 #define OLED_DC     17
 #define OLED_CS     5
 #define OLED_RESET  16
+
+#define ADC_X 34
+#define ADC_Y 35
+#define JOYSTICK_SW 32
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
                          OLED_MOSI, OLED_CLK, OLED_DC,
@@ -54,9 +60,44 @@ void setupI2S() {
   i2s_zero_dma_buffer(I2S_NUM);
 }
 
+esp_adc_cal_characteristics_t *adc_chars;
+
+void setupADC() {
+  // Configure ADC1 channel 6 (GPIO34)
+  adc1_config_width(ADC_WIDTH_BIT_12);
+  adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_DB_11);
+  
+  // Configure ADC1 channel 7 (GPIO35)
+  adc1_config_channel_atten(ADC1_CHANNEL_7, ADC_ATTEN_DB_11);
+
+  // Setup ADC calibration
+  adc_chars = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
+  esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
+      ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, adc_chars);
+  
+  if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
+    Serial.println("Using eFuse Vref");
+  } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
+    Serial.println("Using Two Point Calibration");
+  } else {
+    Serial.println("Using Default Vref");
+  }
+}
+
+int readADC(int channel) {
+  int raw = adc1_get_raw((adc1_channel_t)channel);
+  // Convert raw reading to voltage in mV
+  int voltage = esp_adc_cal_raw_to_voltage(raw, adc_chars);
+  return voltage;
+}
+
 void setup() {
   Serial.begin(115200);
   setupI2S();
+
+  setupADC();
+
+  pinMode(JOYSTICK_SW, INPUT_PULLUP);
 
   if (!display.begin(SSD1306_SWITCHCAPVCC)) {
     Serial.println("SSD1306 failed");
@@ -66,10 +107,11 @@ void setup() {
   display.display();
 }
 
+const char* noteNames[] = {
+  "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+};
+
 String frequencyToNote(float freq) {
-  const char* noteNames[] = {
-    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
-  };
 
   if (freq < 20 || freq > 5000) return "-";
 
@@ -79,6 +121,12 @@ String frequencyToNote(float freq) {
 
   return String(noteNames[noteIndex]) + String(octave);
 }
+
+int points = 0;
+String randomNote = String(noteNames[0]);
+int noteRecognizedInARow = 0;
+String prevRecognizedNote;
+#define NOTES_IN_A_ROW_RECOGNITION_THRESHOLD 5
 
 void loop() {
   size_t bytes_read;
@@ -115,22 +163,39 @@ void loop() {
       maxIndex = i;
     }
   }
-
   double frequency = (maxIndex * SAMPLING_FREQUENCY) / SAMPLES;
   String note = frequencyToNote(frequency);
+  String noteWithoutOctave = note.substring(0, note.length() - 1);
+
+  if(prevRecognizedNote == noteWithoutOctave) {
+    ++noteRecognizedInARow;
+  } else {
+    noteRecognizedInARow = 0;
+    prevRecognizedNote = noteWithoutOctave;
+  }
+
+
+  int64_t time_us = esp_timer_get_time();
+
+  if(noteWithoutOctave == randomNote && noteRecognizedInARow > NOTES_IN_A_ROW_RECOGNITION_THRESHOLD) {
+    randomNote = String(noteNames[time_us%12]);
+    points++;
+  }
 
   display.clearDisplay();
-  display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(2);
+
   display.setCursor(0, 0);
   display.print("Note:");
+  display.print(randomNote);
+
   display.setCursor(0, 30);
-  display.setTextSize(3);
-  display.print(note);
+  display.print("Points:");
+  display.print(points);
   display.display();
 
   // Serial.printf("Freq: %.2f Hz, Note: %s\n", frequency, note.c_str());
-
   // delay(20);
 }
 
