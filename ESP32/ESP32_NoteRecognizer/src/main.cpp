@@ -4,6 +4,11 @@
 #include <Adafruit_SSD1306.h>
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
+#include <vector>
+#include <algorithm>
+
+String getRandomNote();
+int getRandomString();
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -32,6 +37,13 @@ float vReal[SAMPLES];
 float vImag[SAMPLES];
 int32_t samples[SAMPLES];
 ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, SAMPLES, SAMPLING_FREQUENCY); 
+
+enum class AppState {
+    NoteChooser,
+    InGame,
+    None,
+};
+AppState currentState = AppState::NoteChooser;
 
 void setupI2S() {
   const i2s_config_t i2s_config = {
@@ -111,6 +123,8 @@ const char* noteNames[] = {
   "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
 };
 
+std::vector<int> choosenNoteIndexes;
+
 String frequencyToNote(float freq) {
 
   if (freq < 20 || freq > 5000) return "-";
@@ -123,12 +137,31 @@ String frequencyToNote(float freq) {
 }
 
 int points = 0;
-String randomNote = String(noteNames[0]);
+String randomNote;
+int randomString = 1;
 int noteRecognizedInARow = 0;
 String prevRecognizedNote;
 #define NOTES_IN_A_ROW_RECOGNITION_THRESHOLD 5
 
+void handleInGameState();
+void handleNoteChooserState();
+
 void loop() {
+
+  switch(currentState)
+  {
+    case AppState::InGame:
+      handleInGameState();
+      break;
+    case AppState::NoteChooser:
+      handleNoteChooserState();
+      break;
+    default:
+      Serial.print("Unrecognized state");
+  }
+}
+
+void handleInGameState() {
   size_t bytes_read;
 
   i2s_read(I2S_NUM, &samples, sizeof(samples), &bytes_read, portMAX_DELAY);
@@ -167,18 +200,20 @@ void loop() {
   String note = frequencyToNote(frequency);
   String noteWithoutOctave = note.substring(0, note.length() - 1);
 
-  if(prevRecognizedNote == noteWithoutOctave) {
+  Serial.print("Note: ");
+  Serial.println(note);
+
+
+  if (prevRecognizedNote == noteWithoutOctave) {
     ++noteRecognizedInARow;
   } else {
     noteRecognizedInARow = 0;
     prevRecognizedNote = noteWithoutOctave;
   }
 
-
-  int64_t time_us = esp_timer_get_time();
-
-  if(noteWithoutOctave == randomNote && noteRecognizedInARow > NOTES_IN_A_ROW_RECOGNITION_THRESHOLD) {
-    randomNote = String(noteNames[time_us%12]);
+  if (noteWithoutOctave == randomNote &&
+      noteRecognizedInARow > NOTES_IN_A_ROW_RECOGNITION_THRESHOLD) {
+    randomNote = getRandomNote();
     points++;
   }
 
@@ -190,13 +225,148 @@ void loop() {
   display.print("Note:");
   display.print(randomNote);
 
-  display.setCursor(0, 30);
+  display.setCursor(0,20);
+  display.print("String: ");
+  display.print(randomString);
+
+  display.setCursor(0, 50);
   display.print("Points:");
   display.print(points);
   display.display();
-
-  // Serial.printf("Freq: %.2f Hz, Note: %s\n", frequency, note.c_str());
-  // delay(20);
 }
 
+int noteCursorPos = 0;
+bool didSwipeRight = false; 
+bool didSwipeLeft = false; 
+bool didSwipeUp = false; 
+bool didSwipeDown = false; 
+bool didClick = false; 
+
+bool didSwipeRightLock = true; 
+bool didSwipeLeftLock = true; 
+bool didSwipeUpLock = true; 
+bool didSwipeDownLock = true; 
+bool didClickLock = true; 
+
+void handleNoteChooserState() {
+
+  didSwipeRight = false; 
+  didSwipeLeft = false; 
+  didSwipeUp = false; 
+  didSwipeDown = false; 
+  didClick = false;
+
+  uint32_t x_channel = readADC(ADC1_CHANNEL_7);
+  uint32_t y_channel = readADC(ADC1_CHANNEL_6);
+  Serial.printf("ch7: %d, ch6: %d\n\r", x_channel, y_channel);
+
+  //Right swiping
+  if(didSwipeRightLock && x_channel < 300) {
+    didSwipeRight = true;
+    didSwipeRightLock = false;
+  }
+  if(x_channel > 300) {
+    didSwipeRightLock = true;
+  }
+
+  //Left swiping
+  if(didSwipeLeftLock && x_channel > 3000) {
+    didSwipeLeft = true;
+    didSwipeLeftLock = false;
+  }
+  if(x_channel < 3000) {
+    didSwipeLeftLock = true;
+  }
+
+  //Down swiping
+  if(didSwipeDownLock && y_channel > 3000) {
+    didSwipeDown = true;
+    didSwipeDownLock = false;
+  }
+  if(y_channel < 3000) {
+    didSwipeDownLock = true;
+  }
+
+  //Up swiping
+  if(didSwipeUpLock && y_channel < 300) {
+    didSwipeUp = true;
+    didSwipeUpLock = false;
+  }
+  if(y_channel > 300) {
+    didSwipeUpLock = true;
+  }
+   
+  //Clicking 
+  if(didClickLock && !digitalRead(JOYSTICK_SW)) {
+    didClick = true;
+    didClickLock = false;
+  }
+  if(digitalRead(JOYSTICK_SW)) {
+    didClickLock = true;
+  }
+
+  if(didClick) {
+    auto it = std::find(choosenNoteIndexes.begin(), choosenNoteIndexes.end(), noteCursorPos); 
+    if(it != choosenNoteIndexes.end()) {
+      choosenNoteIndexes.erase(it);
+    } else {
+      choosenNoteIndexes.push_back(noteCursorPos);
+    }
+  }
+
+  if(didSwipeRight) {
+    noteCursorPos = (++noteCursorPos)%12;
+  }
+  if(didSwipeLeft) {
+    noteCursorPos = (--noteCursorPos)%12;
+  }
+
+  if(didSwipeUp) {
+    currentState = AppState::InGame;
+    randomNote = getRandomNote();
+    randomString = getRandomString();
+  }
+
+
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+
+  display.setCursor(0, 3);
+  display.setTextSize(1);
+  display.print("All notes: ");
+  display.setCursor(0, 16);
+  for(int i = 0 ; i < 11 ; ++i) {
+    display.print(noteNames[i]);
+    if(noteCursorPos == i) {
+      display.print("*");
+    }
+    display.print(" ");
+  }
+
+  display.setCursor(0, 35);
+  display.print("Choosen notes: ");
+  for(int i = 0 ; i < 11 ; ++i) {
+    if(std::find(choosenNoteIndexes.begin(), choosenNoteIndexes.end(), i) != choosenNoteIndexes.end()) {
+      display.print(noteNames[i]);
+      display.print(" ");
+    }
+  }
+
+  display.display();
+}
+
+String getRandomNote() {
+  int64_t time_us = esp_timer_get_time();
+  int randomIndex = choosenNoteIndexes[time_us%choosenNoteIndexes.size()];
+  return String(noteNames[randomIndex]);
+}
+
+int getRandomString() {
+  int64_t time_us = esp_timer_get_time();
+  int randomString = time_us%7;
+  if(randomString == 0) {
+    randomString = 1;
+  }
+  return randomString;
+}
 
